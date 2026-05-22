@@ -21,7 +21,7 @@ import type {
   UsersMeResponse,
 } from "../types";
 
-const STORAGE_KEY = "my-girin-log.mockDb.v2";
+const STORAGE_KEY = "my-girin-log.mockDb.v3";
 const LEGACY_STORAGE_KEYS = ["wootegotchi.mockDb.v1"];
 const API_BASE_URL = "/api/v1";
 
@@ -37,15 +37,15 @@ type MockDb = {
 };
 
 const PET_META_MAP: Record<`${PetLevel}_${PetCondition}`, Omit<PetMeta, "totalFrames">> = {
-  "0_good": { stateNumber: 1, stateKey: "1-calf-good", spriteRowIndex: 0 },
-  "0_bad": { stateNumber: 2, stateKey: "2-calf-bad", spriteRowIndex: 1 },
-  "0_terrible": { stateNumber: 3, stateKey: "3-calf-terrible", spriteRowIndex: 2 },
-  "1_good": { stateNumber: 4, stateKey: "4-adolescent-good", spriteRowIndex: 3 },
-  "1_bad": { stateNumber: 5, stateKey: "5-adolescent-bad", spriteRowIndex: 4 },
-  "1_terrible": { stateNumber: 6, stateKey: "6-adolescent-terrible", spriteRowIndex: 5 },
-  "2_good": { stateNumber: 7, stateKey: "7-adult-good", spriteRowIndex: 6 },
-  "2_bad": { stateNumber: 8, stateKey: "8-adult-bad", spriteRowIndex: 7 },
-  "2_terrible": { stateNumber: 9, stateKey: "9-adult-terrible", spriteRowIndex: 8 },
+  "1_good": { stateNumber: 1, stateKey: "1-calf-good", spriteRowIndex: 0 },
+  "1_bad": { stateNumber: 2, stateKey: "2-calf-bad", spriteRowIndex: 1 },
+  "1_terrible": { stateNumber: 3, stateKey: "3-calf-terrible", spriteRowIndex: 2 },
+  "2_good": { stateNumber: 4, stateKey: "4-adolescent-good", spriteRowIndex: 3 },
+  "2_bad": { stateNumber: 5, stateKey: "5-adolescent-bad", spriteRowIndex: 4 },
+  "2_terrible": { stateNumber: 6, stateKey: "6-adolescent-terrible", spriteRowIndex: 5 },
+  "3_good": { stateNumber: 7, stateKey: "7-adult-good", spriteRowIndex: 6 },
+  "3_bad": { stateNumber: 8, stateKey: "8-adult-bad", spriteRowIndex: 7 },
+  "3_terrible": { stateNumber: 9, stateKey: "9-adult-terrible", spriteRowIndex: 8 },
 };
 
 function todayKey() {
@@ -57,8 +57,8 @@ function formatDateKey(dateKey: string) {
 }
 
 function stageForLevel(level: PetLevel): PetStage {
-  if (level === 0) return "calf";
-  if (level === 1) return "adolescent";
+  if (level === 1) return "calf";
+  if (level === 2) return "adolescent";
   return "adult";
 }
 
@@ -213,8 +213,8 @@ function getOrCreateSession(db: MockDb, dateKey: string): DailyChatSession {
 }
 
 function normalizePetAfterExp(exp: number): PetState {
-  const level: PetLevel = exp >= 100 ? 2 : exp >= 55 ? 1 : 0;
-  const carriedExp = level === 2 ? exp % 100 : exp;
+  const level: PetLevel = exp >= 100 ? 3 : exp >= 55 ? 2 : 1;
+  const carriedExp = level === 3 ? exp % 100 : exp;
   return buildPet(level, "good", Math.min(100, carriedExp));
 }
 

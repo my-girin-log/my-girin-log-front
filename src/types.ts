@@ -1,6 +1,6 @@
 export type TabKey = "home" | "pet" | "archive";
 
-export type PetLevel = 0 | 1 | 2;
+export type PetLevel = 1 | 2 | 3;
 export type PetStage = "calf" | "adolescent" | "adult";
 export type PetCondition = "good" | "bad" | "terrible";
 

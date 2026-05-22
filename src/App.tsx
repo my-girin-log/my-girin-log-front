@@ -68,14 +68,14 @@ function Icon({ name }: { name: "home" | "pet" | "archive" | "send" | "mic" | "s
 
 function useSpriteFrame(pet?: PetState, intervalMs = 180) {
   const [frame, setFrame] = useState(1);
+  const totalFrames = pet?.meta.totalFrames ?? 4;
 
   useEffect(() => {
-    if (!pet) return;
     const timerId = window.setInterval(() => {
-      setFrame((current) => (current % pet.meta.totalFrames) + 1);
+      setFrame((current) => (current % totalFrames) + 1);
     }, intervalMs);
     return () => window.clearInterval(timerId);
-  }, [intervalMs, pet]);
+  }, [intervalMs, totalFrames]);
 
   if (!pet) return "";
   return spriteModules[`./giraffe_sprites/${pet.meta.stateKey}-${frame}.png`] ?? "";
@@ -89,6 +89,7 @@ function App() {
   const [retrospectives, setRetrospectives] = useState<Retrospective[]>([]);
   const [activeTab, setActiveTab] = useState<TabKey>("home");
   const [selectedDateKey, setSelectedDateKey] = useState(todayKey());
+  const [autoOpenDateKey, setAutoOpenDateKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   async function refresh(dateKey = selectedDateKey) {
@@ -137,9 +138,9 @@ function App() {
             onRollup={async () => {
               await mockApi.postDiariesRollup(selectedDateKey);
               await refresh(selectedDateKey);
+              setAutoOpenDateKey(selectedDateKey);
               setActiveTab("archive");
             }}
-            onOpenArchive={() => setActiveTab("archive")}
             selectedDateKey={selectedDateKey}
           />
         ) : null}
@@ -150,6 +151,8 @@ function App() {
             retrospectives={retrospectives}
             onRefresh={refresh}
             onPetChange={setPet}
+            autoOpenDateKey={autoOpenDateKey}
+            onAutoOpened={() => setAutoOpenDateKey(null)}
             onOpenHome={async (dateKey) => {
               setSelectedDateKey(dateKey);
               const nextSession = await mockApi.getChatsActive(dateKey);
@@ -269,7 +272,6 @@ function HomeScreen({
   onPetChange,
   onSessionChange,
   onRollup,
-  onOpenArchive,
   selectedDateKey,
 }: {
   pet: PetState;
@@ -277,7 +279,6 @@ function HomeScreen({
   onPetChange: (pet: PetState) => void;
   onSessionChange: (session: DailyChatSession) => void;
   onRollup: () => Promise<void>;
-  onOpenArchive: () => void;
   selectedDateKey: string;
 }) {
   const sprite = useSpriteFrame(pet);
@@ -305,9 +306,6 @@ function HomeScreen({
       <div className="statusLine">
         <span className="statusDot" />
         {formatDateKey(selectedDateKey)} 기록 중
-        <button className="softButton" onClick={onRollup}>
-          <Icon name="spark" /> {formatDateKey(selectedDateKey)} 기록 정리하기
-        </button>
       </div>
       <div className="interactionBand">
         <img src={sprite} alt="실록이" />
@@ -324,12 +322,12 @@ function HomeScreen({
             <time>{format(new Date(item.createdAt), "a h:mm")}</time>
           </article>
         ))}
+        {session.messages.length > 1 ? (
+          <button type="button" className="endSessionButton" onClick={onRollup}>
+            <Icon name="spark" /> 현재까지 회고 요약해서 끝내기
+          </button>
+        ) : null}
       </div>
-      {session.messages.length >= 5 ? (
-        <button className="textAction" onClick={onOpenArchive}>
-          쌓인 기록으로 회고 쓰기
-        </button>
-      ) : null}
       <form className="composer" onSubmit={submit}>
         <button type="button" className="iconButton" aria-label="음성 녹음">
           <Icon name="mic" />
@@ -394,14 +392,23 @@ function ArchiveScreen({
   onRefresh,
   onPetChange,
   onOpenHome,
+  autoOpenDateKey,
+  onAutoOpened,
 }: {
   diaries: DiarySummary[];
   retrospectives: Retrospective[];
   onRefresh: () => Promise<void>;
   onPetChange: (pet: PetState) => void;
   onOpenHome: (dateKey: string) => void;
+  autoOpenDateKey: string | null;
+  onAutoOpened: () => void;
 }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [activeStartDate, setActiveStartDate] = useState<Date>(() => {
+    const d = new Date();
+    d.setDate(1);
+    return d;
+  });
   const [selectedDiary, setSelectedDiary] = useState<Diary | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -410,6 +417,14 @@ function ArchiveScreen({
   const [selectedRetro, setSelectedRetro] = useState<Retrospective | null>(null);
   const dateKey = format(selectedDate, "yyyy-MM-dd");
   const diaryKeys = useMemo(() => new Set(diaries.map((diary) => diary.dateKey)), [diaries]);
+  const currentMonthRetros = useMemo(
+    () =>
+      retrospectives.filter((retro) => {
+        const d = new Date(retro.createdAt);
+        return d.getFullYear() === activeStartDate.getFullYear() && d.getMonth() === activeStartDate.getMonth();
+      }),
+    [retrospectives, activeStartDate],
+  );
 
   async function openDiary(date: Date) {
     const key = format(date, "yyyy-MM-dd");
@@ -421,48 +436,57 @@ function ArchiveScreen({
     setSheetOpen(true);
   }
 
+  useEffect(() => {
+    if (!autoOpenDateKey) return;
+    const target = parseISO(autoOpenDateKey);
+    const monthAnchor = new Date(target.getFullYear(), target.getMonth(), 1);
+    setActiveStartDate(monthAnchor);
+    openDiary(target);
+    onAutoOpened();
+  }, [autoOpenDateKey]);
+
   return (
     <section className="screen archiveScreen">
       <div className="archiveHero">
         <img src={spriteModules["./giraffe_sprites/1-calf-good-1.png"]} alt="" />
         <div>
           <p>성장하는 당신을 응원해요!</p>
-          <strong>{format(new Date(), "M월")}의 기록들</strong>
+          <strong>{format(activeStartDate, "M월")}의 기록들</strong>
         </div>
       </div>
       <div className="calendarCard">
-        <div className="sectionTitle">
-          <h2>{format(selectedDate, "yyyy년 M월")}</h2>
-        </div>
         <Calendar
           calendarType="gregory"
           locale="ko-KR"
           value={selectedDate}
+          activeStartDate={activeStartDate}
+          onActiveStartDateChange={({ activeStartDate: next }) => {
+            if (next) setActiveStartDate(next);
+          }}
           onClickDay={openDiary}
+          view="month"
+          minDetail="month"
+          maxDetail="month"
           next2Label={null}
           prev2Label={null}
-          tileContent={({ date, view }) => {
+          prevLabel="‹"
+          nextLabel="›"
+          navigationLabel={({ date }) => format(date, "yyyy년 M월")}
+          formatDay={(_, date) => format(date, "d")}
+          formatShortWeekday={(_, date) => ["일", "월", "화", "수", "목", "금", "토"][date.getDay()]}
+          tileClassName={({ date, view }) => {
+            if (view !== "month") return null;
             const key = format(date, "yyyy-MM-dd");
-            if (view !== "month" || !diaryKeys.has(key)) return null;
-            return <span className="calendarDot" />;
+            return diaryKeys.has(key) ? "tileWithEntry" : null;
           }}
         />
       </div>
       <button className="primaryButton" onClick={() => setRetroOpen(true)}>
-        <Icon name="book" /> 회고 작성하기
+        <Icon name="book" /> 회고 생성하기
       </button>
       <ListSection
-        title="최근 다이어리"
-        items={diaries.slice(0, 3).map((diary) => ({
-          id: diary.dateKey,
-          title: diary.dateKey,
-          body: `${diary.emotionEmoji} 기록이 정리되어 있어요.`,
-          onClick: () => openDiary(new Date(diary.dateKey)),
-        }))}
-      />
-      <ListSection
-        title="최근 회고"
-        items={retrospectives.slice(0, 3).map((retro) => ({
+        title={`${format(activeStartDate, "M월")}의 회고`}
+        items={currentMonthRetros.map((retro) => ({
           id: String(retro.retrospectiveId),
           title: retro.title,
           body: `${format(new Date(retro.range.startDate), "M/d")} ~ ${format(new Date(retro.range.endDate), "M/d")} · ${typeLabels[retro.type]}`,
