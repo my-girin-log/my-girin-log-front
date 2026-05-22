@@ -15,7 +15,7 @@ export type User = {
   id: number;
   githubId: string;
   nickname: string;
-  avatarUrl: string;
+  avatarUrl?: string;
   hasPersona: boolean;
   createdAt: string;
 };
@@ -53,6 +53,7 @@ export type ChatMessage = {
   role: "user" | "assistant";
   content: string;
   createdAt: string;
+  source?: string;
 };
 
 export type DailyChatSession = {

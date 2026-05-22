@@ -49,6 +49,25 @@ type BackendRetrospectiveCreated = BackendRetrospective & {
   petUpdate: PetState;
 };
 
+type BackendChatActive =
+  | DailyChatSession
+  | {
+      session: Omit<DailyChatSession, "messages">;
+      messages: DailyChatSession["messages"];
+    };
+
+export function fromBackendChatActive(payload: BackendChatActive): DailyChatSession {
+  if ("session" in payload) {
+    return { ...payload.session, messages: payload.messages ?? [] };
+  }
+  return { ...payload, messages: payload.messages ?? [] };
+}
+
+async function fetchActiveSession(): Promise<DailyChatSession> {
+  const payload = await apiRequest<BackendChatActive>("/chats/active");
+  return fromBackendChatActive(payload);
+}
+
 export function fromBackendRetrospective(b: BackendRetrospective): Retrospective {
   return {
     retrospectiveId: b.retrospectiveId,
@@ -79,12 +98,11 @@ export const realApi = {
   },
 
   async getOrCreateChatSession(_dateKey: string): Promise<DailyChatSession> {
-    // Backend `/chats/active` returns today's session only (06:00 KST boundary).
-    return apiRequest<DailyChatSession>("/chats/active");
+    return fetchActiveSession();
   },
 
   async getChatsActive(_dateKey?: string): Promise<DailyChatSession> {
-    return apiRequest<DailyChatSession>("/chats/active");
+    return fetchActiveSession();
   },
 
   async postChatsMessage(body: SendMessageRequest): Promise<SendMessageResponse> {

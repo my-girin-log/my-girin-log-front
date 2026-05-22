@@ -1,5 +1,12 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { fromBackendRetrospective, realApi, toBackendRetrospectiveBody } from "./realApi";
+import type { DailyChatSession } from "../types";
+import {
+  fromBackendChatActive,
+  fromBackendRetrospective,
+  realApi,
+  toBackendRetrospectiveBody,
+} from "./realApi";
+import type { DailyChatSession } from "../types";
 
 describe("toBackendRetrospectiveBody", () => {
   it("renames startDate/endDate to rangeStartDate/rangeEndDate", () => {
@@ -32,6 +39,51 @@ describe("toBackendRetrospectiveBody", () => {
       promptOptions: [],
     });
     expect(result.promptOptions).toEqual({ focus: "" });
+  });
+});
+
+describe("fromBackendChatActive", () => {
+  it("flattens {session, messages} envelope into DailyChatSession", () => {
+    const result = fromBackendChatActive({
+      session: {
+        id: 1,
+        dateKey: "2026-05-22",
+        status: "active",
+        startedAt: "2026-05-22T07:19:27.440Z",
+      },
+      messages: [
+        { id: 1, role: "user", content: "hi", createdAt: "2026-05-22T07:19:45Z", source: "typed" },
+      ],
+    });
+    expect(result.id).toBe(1);
+    expect(result.dateKey).toBe("2026-05-22");
+    expect(result.messages).toHaveLength(1);
+    expect(result.messages[0].content).toBe("hi");
+  });
+
+  it("passes through flat DailyChatSession unchanged", () => {
+    const flat = {
+      id: 9,
+      dateKey: "2026-05-22",
+      status: "active" as const,
+      startedAt: "2026-05-22T00:00:00Z",
+      messages: [],
+    };
+    const result = fromBackendChatActive(flat);
+    expect(result).toEqual(flat);
+  });
+
+  it("defaults messages to [] when envelope lacks it", () => {
+    const result = fromBackendChatActive({
+      session: {
+        id: 1,
+        dateKey: "2026-05-22",
+        status: "active",
+        startedAt: "2026-05-22T07:19:27.440Z",
+      },
+      messages: undefined as unknown as DailyChatSession["messages"],
+    });
+    expect(result.messages).toEqual([]);
   });
 });
 
