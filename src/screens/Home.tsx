@@ -25,6 +25,7 @@ export function HomeScreen({
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [rolling, setRolling] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const logEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -36,6 +37,7 @@ export function HomeScreen({
     const content = message.trim();
     if (!content || sending) return;
     setMessage("");
+    setErrorMessage(null);
     setSending(true);
     try {
       await api.postChatsMessage({
@@ -51,6 +53,12 @@ export function HomeScreen({
       onPetChange(me.pet);
     } catch (error) {
       console.error(error);
+      const status = (error as { status?: number } | null)?.status;
+      setErrorMessage(
+        status === 408
+          ? "백엔드 응답이 늦어 메시지 전송이 취소됐어요. 잠시 후 다시 시도해주세요."
+          : "메시지 전송에 실패했어요. 잠시 후 다시 시도해주세요.",
+      );
     } finally {
       setSending(false);
     }
@@ -108,6 +116,7 @@ export function HomeScreen({
         ) : null}
         <div ref={logEndRef} />
       </div>
+      {errorMessage ? <p className="formError">{errorMessage}</p> : null}
       <form className="composer" onSubmit={submit}>
         <button type="button" className="iconButton" aria-label="음성 녹음">
           <Icon name="mic" />

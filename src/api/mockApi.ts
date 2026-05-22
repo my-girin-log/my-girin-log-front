@@ -456,4 +456,25 @@ export const mockApi = {
       retrospectives: db.retrospectives,
     };
   },
+
+  /** 데모용 — Pet 화면 "레벨업" 버튼이 호출. mock 에서도 EXP 누적 + 새 PetState. */
+  async grantExp(amount = 10): Promise<PetState> {
+    const db = readDb();
+    db.pet.exp = Math.min(30, db.pet.exp + amount); // mock 도 level cap 2 (30 EXP)
+    db.pet.level = Math.min(2, Math.floor(db.pet.exp / 10)) as 0 | 1 | 2;
+    db.pet.stage = db.pet.level === 0 ? "calf" : db.pet.level === 1 ? "adolescent" : "adult";
+    db.pet.condition = "good";
+    db.pet.expIntoLevel = db.pet.exp % 10;
+    db.pet.levelUpExp = 10;
+    db.pet.lastActivityAt = new Date().toISOString();
+    const stateNumber = db.pet.level * 3 + 1; // good 가정
+    db.pet.meta = {
+      stateNumber,
+      stateKey: `${stateNumber}-${db.pet.stage}-${db.pet.condition}`,
+      totalFrames: 4,
+      spriteRowIndex: stateNumber - 1,
+    };
+    writeDb(db);
+    return db.pet;
+  },
 };

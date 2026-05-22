@@ -173,6 +173,14 @@ export const realApi = {
     const items = Array.isArray(list) ? list : (list?.retrospectives ?? []);
     return { retrospectives: items.map(fromBackendRetrospective) };
   },
+
+  /** 데모용 — Pet 화면 "레벨업" 버튼이 호출. EXP 즉시 누적 + 새 PetState 반환. */
+  async grantExp(amount = 10): Promise<PetState> {
+    return apiRequest<PetState>("/admin/grant-exp", {
+      method: "POST",
+      body: { amount },
+    });
+  },
 };
 
 function isNotFound(error: unknown): boolean {

@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useSpriteFrame } from "../hooks/useSpriteFrame";
+import { api } from "../api";
 import type { DiarySummary, PetState } from "../types";
 import { format, subDays } from "date-fns";
 
@@ -33,11 +35,28 @@ function getCurrentStreak(diaryKeys: Set<string>) {
 export function PetScreen({
   pet,
   diaries,
+  onPetChange,
 }: {
   pet: PetState;
   diaries: DiarySummary[];
+  onPetChange?: (pet: PetState) => void;
 }) {
   const sprite = useSpriteFrame(pet);
+  const [granting, setGranting] = useState(false);
+
+  async function handleLevelUp() {
+    if (granting) return;
+    setGranting(true);
+    try {
+      const next = await api.grantExp(10);
+      onPetChange?.(next);
+    } catch (e) {
+      console.error("[grantExp] failed", e);
+      alert("레벨업 실패 — 콘솔 확인");
+    } finally {
+      setGranting(false);
+    }
+  }
   const conditionLabel = CONDITION_LABEL[pet.condition];
   const diaryKeys = new Set(diaries.map((diary) => diary.dateKey));
   const currentStreak = getCurrentStreak(diaryKeys);
@@ -67,6 +86,20 @@ export function PetScreen({
       <p className="petBadge">
         LV.{pet.level + 1} — {STAGE_LABEL_KO[pet.stage]} · STATUS: {conditionLabel}
       </p>
+      {/* 데모용 — EXP +10 즉시 누적해서 진화 시연 */}
+      <button
+        type="button"
+        className="primaryButton"
+        onClick={handleLevelUp}
+        disabled={granting || pet.level >= MAX_LEVEL}
+        style={{ marginTop: 12, opacity: pet.level >= MAX_LEVEL ? 0.4 : 1 }}
+      >
+        {pet.level >= MAX_LEVEL
+          ? "MAX LEVEL"
+          : granting
+            ? "진화 중..."
+            : `🚀 레벨업 (+10 EXP, 데모)`}
+      </button>
       {(() => {
         const isMax = pet.level >= MAX_LEVEL;
         const expIntoLevel = pet.expIntoLevel ?? pet.exp;

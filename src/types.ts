@@ -95,8 +95,16 @@ export type Diary = {
 export type RollupResponse = {
   success: boolean;
   message: string;
-  generatedDiaryId: number;
   petUpdate: PetState;
+  /** 백엔드가 단일 다이어리를 새로 생성한 경우에만 부여됨 */
+  generatedDiaryId?: number;
+  /** 배치 결과 — 백엔드 스케줄러와 동일 메서드 사용 시 채워짐 */
+  batchResult?: {
+    processedSessions: number;
+    diariesCreated: number;
+    emptySessionsClosed: number;
+    failures: unknown[];
+  };
 };
 
 export type RetrospectiveType = "tech_blog" | "emotion" | "woowacourse" | "freeform";
