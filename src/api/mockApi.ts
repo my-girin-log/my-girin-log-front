@@ -1,4 +1,4 @@
-import { format, isAfter, isBefore, parseISO, subDays } from "date-fns";
+import { differenceInCalendarDays, format, isAfter, isBefore, parseISO, subDays } from "date-fns";
 import type {
   ChatMessage,
   DailyChatSession,
@@ -21,7 +21,7 @@ import type {
   UsersMeResponse,
 } from "../types";
 
-const STORAGE_KEY = "my-girin-log.mockDb.v3";
+const STORAGE_KEY = "my-girin-log.mockDb.v4";
 const LEGACY_STORAGE_KEYS = ["wootegotchi.mockDb.v1"];
 const API_BASE_URL = "/api/v1";
 
@@ -37,16 +37,25 @@ type MockDb = {
 };
 
 const PET_META_MAP: Record<`${PetLevel}_${PetCondition}`, Omit<PetMeta, "totalFrames">> = {
-  "1_good": { stateNumber: 1, stateKey: "1-calf-good", spriteRowIndex: 0 },
-  "1_bad": { stateNumber: 2, stateKey: "2-calf-bad", spriteRowIndex: 1 },
-  "1_terrible": { stateNumber: 3, stateKey: "3-calf-terrible", spriteRowIndex: 2 },
-  "2_good": { stateNumber: 4, stateKey: "4-adolescent-good", spriteRowIndex: 3 },
-  "2_bad": { stateNumber: 5, stateKey: "5-adolescent-bad", spriteRowIndex: 4 },
-  "2_terrible": { stateNumber: 6, stateKey: "6-adolescent-terrible", spriteRowIndex: 5 },
-  "3_good": { stateNumber: 7, stateKey: "7-adult-good", spriteRowIndex: 6 },
-  "3_bad": { stateNumber: 8, stateKey: "8-adult-bad", spriteRowIndex: 7 },
-  "3_terrible": { stateNumber: 9, stateKey: "9-adult-terrible", spriteRowIndex: 8 },
+  "0_good": { stateNumber: 1, stateKey: "1-calf-good", spriteRowIndex: 0 },
+  "0_bad": { stateNumber: 2, stateKey: "2-calf-bad", spriteRowIndex: 1 },
+  "0_terrible": { stateNumber: 3, stateKey: "3-calf-terrible", spriteRowIndex: 2 },
+  "1_good": { stateNumber: 4, stateKey: "4-adolescent-good", spriteRowIndex: 3 },
+  "1_bad": { stateNumber: 5, stateKey: "5-adolescent-bad", spriteRowIndex: 4 },
+  "1_terrible": { stateNumber: 6, stateKey: "6-adolescent-terrible", spriteRowIndex: 5 },
+  "2_good": { stateNumber: 7, stateKey: "7-adult-good", spriteRowIndex: 6 },
+  "2_bad": { stateNumber: 8, stateKey: "8-adult-bad", spriteRowIndex: 7 },
+  "2_terrible": { stateNumber: 9, stateKey: "9-adult-terrible", spriteRowIndex: 8 },
 };
+
+const CONDITION_THRESHOLDS = { goodMaxDays: 1, badMaxDays: 3 } as const;
+
+function computeCondition(lastActivityAt: string, reference: Date = new Date()): PetCondition {
+  const days = differenceInCalendarDays(reference, parseISO(lastActivityAt));
+  if (days <= CONDITION_THRESHOLDS.goodMaxDays) return "good";
+  if (days <= CONDITION_THRESHOLDS.badMaxDays) return "bad";
+  return "terrible";
+}
 
 function todayKey() {
   return format(new Date(), "yyyy-MM-dd");
@@ -57,24 +66,32 @@ function formatDateKey(dateKey: string) {
 }
 
 function stageForLevel(level: PetLevel): PetStage {
-  if (level === 1) return "calf";
-  if (level === 2) return "adolescent";
+  if (level === 0) return "calf";
+  if (level === 1) return "adolescent";
   return "adult";
 }
 
-function buildPet(level: PetLevel, condition: PetCondition, exp: number): PetState {
+function buildPet(
+  level: PetLevel,
+  condition: PetCondition,
+  exp: number,
+  lastActivityAt: string = new Date().toISOString(),
+): PetState {
   const meta = PET_META_MAP[`${level}_${condition}`];
   return {
     level,
     stage: stageForLevel(level),
     condition,
     exp,
-    lastActivityAt: new Date().toISOString(),
-    meta: {
-      ...meta,
-      totalFrames: 4,
-    },
+    lastActivityAt,
+    meta: { ...meta, totalFrames: 4 },
   };
+}
+
+function refreshedPet(pet: PetState, reference: Date = new Date()): PetState {
+  const condition = computeCondition(pet.lastActivityAt, reference);
+  if (condition === pet.condition) return pet;
+  return buildPet(pet.level, condition, pet.exp, pet.lastActivityAt);
 }
 
 function createMessage(role: ChatMessage["role"], content: string, id: number): ChatMessage {
@@ -212,10 +229,11 @@ function getOrCreateSession(db: MockDb, dateKey: string): DailyChatSession {
   return session;
 }
 
-function normalizePetAfterExp(exp: number): PetState {
-  const level: PetLevel = exp >= 100 ? 3 : exp >= 55 ? 2 : 1;
-  const carriedExp = level === 3 ? exp % 100 : exp;
-  return buildPet(level, "good", Math.min(100, carriedExp));
+function normalizePetAfterExp(exp: number, lastActivityAt: string = new Date().toISOString()): PetState {
+  const level: PetLevel = exp >= 100 ? 2 : exp >= 55 ? 1 : 0;
+  const carriedExp = level === 2 ? exp % 100 : exp;
+  const condition = computeCondition(lastActivityAt);
+  return buildPet(level, condition, Math.min(100, carriedExp), lastActivityAt);
 }
 
 function pickQuestion(content: string, count: number) {
@@ -251,12 +269,17 @@ export const mockApi = {
 
   async getUsersMe(): Promise<UsersMeResponse> {
     const db = readDb();
+    const pet = refreshedPet(db.pet);
+    if (pet !== db.pet) {
+      db.pet = pet;
+      writeDb(db);
+    }
     return {
       user: {
         ...db.user,
         hasPersona: Boolean(db.persona),
       },
-      pet: db.pet,
+      pet,
     };
   },
 
@@ -304,11 +327,13 @@ export const mockApi = {
       messages: [...session.messages, userMessage, assistantMessage],
     };
     const gained = 2;
-    db.pet = {
-      ...db.pet,
-      exp: Math.min(100, db.pet.exp + gained),
-      lastActivityAt: new Date().toISOString(),
-    };
+    const nextLastActivityAt = new Date().toISOString();
+    db.pet = buildPet(
+      db.pet.level,
+      computeCondition(nextLastActivityAt),
+      Math.min(100, db.pet.exp + gained),
+      nextLastActivityAt,
+    );
     writeDb(db);
     return {
       userMessage,

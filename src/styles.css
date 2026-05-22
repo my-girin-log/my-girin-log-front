@@ -6,6 +6,7 @@
     sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
   --mint: #aee6c5;
   --mint-soft: #dff5e8;
   --forest: #285b43;
@@ -19,10 +20,14 @@
   --shadow: 3px 3px 0 var(--ink);
   --border: 2px solid var(--ink);
   --mono: "Roboto Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --nav-height: 58px;
 }
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -32,6 +37,7 @@ body {
     radial-gradient(circle at 1px 1px, rgba(30, 33, 40, 0.12) 1px, transparent 0) 0 0 / 18px
       18px,
     var(--bg);
+  overscroll-behavior-y: contain;
 }
 
 button,
@@ -43,11 +49,18 @@ textarea {
 button {
   border: 0;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 button:active {
   transform: translate(2px, 2px);
   box-shadow: 1px 1px 0 var(--ink);
+}
+
+input,
+textarea {
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .appShell,
@@ -80,7 +93,7 @@ button:active {
   align-items: center;
   justify-content: space-between;
   min-height: 46px;
-  padding: 6px 12px;
+  padding: calc(6px + var(--safe-top)) 12px 6px;
   background: var(--surface);
   border-bottom: var(--border);
 }
@@ -103,7 +116,7 @@ button:active {
 
 .appMain {
   min-height: calc(100vh - 110px);
-  padding-bottom: 68px;
+  padding-bottom: calc(var(--nav-height) + 10px + var(--safe-bottom));
 }
 
 .screen {
@@ -353,7 +366,7 @@ button:active {
 
 .composer {
   position: sticky;
-  bottom: 64px;
+  bottom: calc(var(--nav-height) + var(--safe-bottom) + 6px);
   display: grid;
   grid-template-columns: 32px 1fr 32px;
   align-items: center;
@@ -371,7 +384,7 @@ button:active {
   outline: 0;
   background: transparent;
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 16px;
 }
 
 .sendButton {
@@ -780,8 +793,9 @@ button:active {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   width: min(100%, 400px);
-  height: 58px;
+  height: calc(var(--nav-height) + var(--safe-bottom));
   margin: 0 auto;
+  padding-bottom: var(--safe-bottom);
   border-top: var(--border);
   background: var(--surface);
 }
@@ -823,16 +837,17 @@ button:active {
 .bottomSheet {
   position: relative;
   width: min(100%, 400px);
-  max-height: 82vh;
+  max-height: 88vh;
   margin: 0 auto;
-  padding: 10px 16px 20px;
+  padding: 10px 16px calc(20px + var(--safe-bottom));
   overflow: auto;
   border: var(--border);
   border-bottom: 0;
-  border-radius: 3px 3px 0 0;
+  border-radius: 12px 12px 0 0;
   background: var(--surface);
   box-shadow: 0 -4px 0 var(--ink);
   font-size: 13px;
+  overscroll-behavior: contain;
 }
 
 .sheetHandle {
@@ -1100,6 +1115,83 @@ button:active {
 
 .personaPreview {
   line-height: 1.6;
+}
+
+.fieldLabel {
+  margin: 14px 0 6px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.fieldLabel:first-of-type {
+  margin-top: 8px;
+}
+
+.sheetCaption {
+  margin: 2px 0 0;
+  font-size: 11px;
+}
+
+.dateRangeRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 8px 0 4px;
+}
+
+.dateRangeRow label {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.dateRangeRow input {
+  width: 100%;
+  padding: 9px 10px;
+  border: var(--border);
+  border-radius: 3px;
+  background: #fff;
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.rangePreview {
+  margin: 6px 0 0;
+  color: var(--forest);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.formError {
+  margin: 8px 0 0;
+  padding: 6px 10px;
+  border: var(--border);
+  border-radius: 3px;
+  background: #ffe6e6;
+  color: var(--danger);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.listEmpty {
+  margin: 8px 0 0;
+  padding: 12px;
+  border: var(--border);
+  border-radius: 3px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
 }
 
 @media (max-width: 340px) {
