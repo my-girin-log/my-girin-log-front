@@ -25,6 +25,7 @@ function App() {
   const [selectedDateKey, setSelectedDateKey] = useState(todayKey());
   const [autoOpenDateKey, setAutoOpenDateKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [skippedOnboarding, setSkippedOnboarding] = useState(false);
 
   async function refresh(dateKey = selectedDateKey) {
     const [me, activeSession, diaryList, retroList] = await Promise.all([
@@ -50,8 +51,13 @@ function App() {
     return <div className="appShell centerOnly">내가그린기린기록을 깨우는 중...</div>;
   }
 
-  if (!user?.hasPersona) {
-    return <Onboarding onComplete={() => refresh(selectedDateKey)} />;
+  if (!user?.hasPersona && !skippedOnboarding) {
+    return (
+      <Onboarding
+        onComplete={() => refresh(selectedDateKey)}
+        onSkip={() => setSkippedOnboarding(true)}
+      />
+    );
   }
 
   async function handleRollup() {

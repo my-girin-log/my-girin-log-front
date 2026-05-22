@@ -3,13 +3,20 @@ import { api } from "../api";
 import { spriteModules } from "../sprites";
 import { delay } from "../utils/async";
 
-export function Onboarding({ onComplete }: { onComplete: () => Promise<void> }) {
+export function Onboarding({
+  onComplete,
+  onSkip,
+}: {
+  onComplete: () => Promise<void>;
+  onSkip?: () => void;
+}) {
   const [loggedIn, setLoggedIn] = useState(false);
   const [nickname, setNickname] = useState("우테코기린");
   const [link, setLink] = useState("");
   const [sources, setSources] = useState<string[]>([]);
   const [rawText, setRawText] = useState("");
   const [creating, setCreating] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   function addLink() {
     const next = link.trim();
@@ -25,11 +32,21 @@ export function Onboarding({ onComplete }: { onComplete: () => Promise<void> }) 
   }
 
   async function submit() {
+    setErrorMessage(null);
     setCreating(true);
-    await delay(750);
-    await api.postUsersOnboarding({ sources, rawText, nickname });
-    await onComplete();
-    window.scrollTo({ top: 0 });
+    try {
+      await delay(750);
+      await api.postUsersOnboarding({ sources, rawText, nickname });
+      await onComplete();
+      window.scrollTo({ top: 0 });
+    } catch (error) {
+      console.error(error);
+      setErrorMessage(
+        "페르소나 생성에 실패했어요. 잠시 후 다시 시도하거나, 관리자에게 LLM 설정을 확인해 달라고 알려주세요.",
+      );
+    } finally {
+      setCreating(false);
+    }
   }
 
   return (
@@ -92,8 +109,18 @@ export function Onboarding({ onComplete }: { onComplete: () => Promise<void> }) 
             />
           </label>
           <button className="primaryButton" disabled={creating} onClick={submit}>
-            {creating ? "글쓰기 습관을 읽고 있어요" : "페르소나 만들기"}
+            {creating ? "글쓰기 습관을 읽고 있어요…" : "페르소나 만들기"}
           </button>
+          {errorMessage ? (
+            <>
+              <p className="formError">{errorMessage}</p>
+              {onSkip ? (
+                <button type="button" className="secondaryButton" onClick={onSkip}>
+                  그냥 넘어가기
+                </button>
+              ) : null}
+            </>
+          ) : null}
         </div>
       )}
     </div>
