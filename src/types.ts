@@ -25,6 +25,8 @@ export type PetState = {
   stage: PetStage;
   condition: PetCondition;
   exp: number;
+  expIntoLevel?: number;
+  levelUpExp?: number;
   lastActivityAt: string;
   meta: PetMeta;
 };

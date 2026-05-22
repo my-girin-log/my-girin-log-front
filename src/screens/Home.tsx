@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { format, parseISO } from "date-fns";
-import { mockApi } from "../api/mockApi";
+import { api } from "../api";
 import { Icon } from "../components/Icon";
 import { useSpriteFrame } from "../hooks/useSpriteFrame";
 import { formatDateKey } from "../utils/date";
@@ -38,14 +38,14 @@ export function HomeScreen({
     setMessage("");
     setSending(true);
     try {
-      await mockApi.postChatsMessage({
+      await api.postChatsMessage({
         sessionId: session.id,
         dateKey: selectedDateKey,
         content,
       });
       const [nextSession, me] = await Promise.all([
-        mockApi.getChatsActive(selectedDateKey),
-        mockApi.getUsersMe(),
+        api.getChatsActive(selectedDateKey),
+        api.getUsersMe(),
       ]);
       onSessionChange(nextSession);
       onPetChange(me.pet);

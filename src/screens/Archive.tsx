@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import Calendar from "react-calendar";
 import ReactMarkdown from "react-markdown";
 import { format, parseISO } from "date-fns";
-import { mockApi } from "../api/mockApi";
+import { api } from "../api";
 import { BottomSheet } from "../components/BottomSheet";
 import { Icon } from "../components/Icon";
 import { ListSection } from "../components/ListSection";
@@ -60,7 +60,7 @@ export function ArchiveScreen({
   async function openDiary(date: Date) {
     const key = toDateKey(date);
     setSelectedDate(date);
-    const diary = await mockApi.getDiary(key);
+    const diary = await api.getDiary(key);
     setSelectedDiary(diary);
     setDraft(diary?.markdown ?? "");
     setEditing(false);
@@ -77,7 +77,7 @@ export function ArchiveScreen({
   }, [autoOpenDateKey]);
 
   async function deleteDiary() {
-    await mockApi.deleteDiary(dateKey);
+    await api.deleteDiary(dateKey);
     await onRefresh();
     setSheetOpen(false);
   }
@@ -87,7 +87,7 @@ export function ArchiveScreen({
       setEditing(true);
       return;
     }
-    const diary = await mockApi.putDiary(dateKey, draft);
+    const diary = await api.putDiary(dateKey, draft);
     setSelectedDiary(diary);
     setEditing(false);
     await onRefresh();

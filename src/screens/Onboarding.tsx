@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { mockApi } from "../api/mockApi";
+import { api } from "../api";
 import { spriteModules } from "../sprites";
 import { delay } from "../utils/async";
 
@@ -19,7 +19,7 @@ export function Onboarding({ onComplete }: { onComplete: () => Promise<void> }) 
   }
 
   async function startLogin() {
-    const me = await mockApi.startGithubMockLogin();
+    const me = await api.startGithubMockLogin();
     setNickname(me.user.nickname);
     setLoggedIn(true);
   }
@@ -27,7 +27,7 @@ export function Onboarding({ onComplete }: { onComplete: () => Promise<void> }) 
   async function submit() {
     setCreating(true);
     await delay(750);
-    await mockApi.postUsersOnboarding({ sources, rawText, nickname });
+    await api.postUsersOnboarding({ sources, rawText, nickname });
     await onComplete();
     window.scrollTo({ top: 0 });
   }

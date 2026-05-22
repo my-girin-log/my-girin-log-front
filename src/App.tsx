@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { mockApi } from "./api/mockApi";
+import { api } from "./api";
 import { BottomNav } from "./components/BottomNav";
 import { ArchiveScreen } from "./screens/Archive";
 import { HomeScreen } from "./screens/Home";
@@ -28,10 +28,10 @@ function App() {
 
   async function refresh(dateKey = selectedDateKey) {
     const [me, activeSession, diaryList, retroList] = await Promise.all([
-      mockApi.getUsersMe(),
-      mockApi.getChatsActive(dateKey),
-      mockApi.getDiaries(),
-      mockApi.getRetrospectives(),
+      api.getUsersMe(),
+      api.getChatsActive(dateKey),
+      api.getDiaries(),
+      api.getRetrospectives(),
     ]);
     setUser(me.user);
     setPet(me.pet);
@@ -55,7 +55,7 @@ function App() {
   }
 
   async function handleRollup() {
-    await mockApi.postDiariesRollup(selectedDateKey);
+    await api.postDiariesRollup(selectedDateKey);
     await refresh(selectedDateKey);
     setAutoOpenDateKey(selectedDateKey);
     setActiveTab("archive");
@@ -63,7 +63,7 @@ function App() {
 
   async function handleOpenHomeFromArchive(dateKey: string) {
     setSelectedDateKey(dateKey);
-    const nextSession = await mockApi.getChatsActive(dateKey);
+    const nextSession = await api.getChatsActive(dateKey);
     setSession(nextSession);
     setActiveTab("home");
     window.scrollTo({ top: 0 });

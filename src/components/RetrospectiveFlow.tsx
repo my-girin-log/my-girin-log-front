@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { endOfWeek, format, isAfter, startOfWeek, subDays } from "date-fns";
-import { mockApi } from "../api/mockApi";
+import { api } from "../api";
 import { promptOptions, rangePresets, typeLabels, type RangePreset } from "../constants";
 import { toDateKey, todayKey } from "../utils/date";
 import type { PetState, RetrospectiveRequest, RetrospectiveType } from "../types";
@@ -75,7 +75,7 @@ export function RetrospectiveFlow({
         type,
         promptOptions: selectedOptions,
       };
-      const response = await mockApi.postRetrospectives(body);
+      const response = await api.postRetrospectives(body);
       setResult(response.markdown);
       setTitle(response.title);
       await onCreated(response.petUpdate);
