@@ -1,10 +1,9 @@
 import { useMemo, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import { endOfWeek, format, isAfter, startOfWeek, subDays } from "date-fns";
+import { endOfWeek, isAfter, startOfWeek, subDays } from "date-fns";
 import { api } from "../api";
 import { promptOptions, rangePresets, typeLabels, type RangePreset } from "../constants";
 import { toDateKey, todayKey } from "../utils/date";
-import type { PetState, RetrospectiveRequest, RetrospectiveType } from "../types";
+import type { PetState, Retrospective, RetrospectiveRequest, RetrospectiveType } from "../types";
 import { BottomSheet } from "./BottomSheet";
 
 type ResolvedRange = { startDate: string; endDate: string } | { error: string };
@@ -40,7 +39,7 @@ export function RetrospectiveFlow({
   onCreated,
 }: {
   onClose: () => void;
-  onCreated: (petUpdate: PetState) => Promise<void>;
+  onCreated: (retrospective: Retrospective, petUpdate: PetState) => Promise<void> | void;
 }) {
   const today = todayKey();
   const [preset, setPreset] = useState<RangePreset>("recent3");
@@ -48,8 +47,6 @@ export function RetrospectiveFlow({
   const [customEnd, setCustomEnd] = useState(today);
   const [type, setType] = useState<RetrospectiveType>("woowacourse");
   const [selectedOptions, setSelectedOptions] = useState<string[]>(["삽질과 해결 중심"]);
-  const [result, setResult] = useState("");
-  const [title, setTitle] = useState("");
   const [generating, setGenerating] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -58,8 +55,7 @@ export function RetrospectiveFlow({
     [preset, customStart, customEnd],
   );
   const rangeError = "error" in range ? range.error : null;
-  const rangeLabel =
-    "startDate" in range ? `${range.startDate} ~ ${range.endDate}` : null;
+  const rangeLabel = "startDate" in range ? `${range.startDate} ~ ${range.endDate}` : null;
 
   async function submit() {
     if (!("startDate" in range)) {
@@ -76,29 +72,21 @@ export function RetrospectiveFlow({
         promptOptions: selectedOptions,
       };
       const response = await api.postRetrospectives(body);
-      setResult(response.markdown);
-      setTitle(response.title);
-      await onCreated(response.petUpdate);
+      const created: Retrospective = {
+        retrospectiveId: response.retrospectiveId,
+        title: response.title,
+        markdown: response.markdown,
+        tags: response.tags,
+        type: body.type,
+        range: { startDate: body.startDate, endDate: body.endDate },
+        createdAt: new Date().toISOString(),
+      };
+      await onCreated(created, response.petUpdate);
     } catch (error) {
       setErrorMessage("회고 생성에 실패했어요. 잠시 후 다시 시도해주세요.");
       console.error(error);
-    } finally {
       setGenerating(false);
     }
-  }
-
-  function copy() {
-    navigator.clipboard.writeText(result);
-  }
-
-  function downloadMarkdown() {
-    const blob = new Blob([result], { type: "text/markdown;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `${title}.md`;
-    anchor.click();
-    URL.revokeObjectURL(url);
   }
 
   return (
@@ -113,6 +101,7 @@ export function RetrospectiveFlow({
             key={item.value}
             className={preset === item.value ? "selected" : ""}
             onClick={() => setPreset(item.value)}
+            disabled={generating}
           >
             {item.label}
           </button>
@@ -127,6 +116,7 @@ export function RetrospectiveFlow({
               value={customStart}
               max={customEnd}
               onChange={(event) => setCustomStart(event.target.value)}
+              disabled={generating}
             />
           </label>
           <label>
@@ -137,6 +127,7 @@ export function RetrospectiveFlow({
               min={customStart}
               max={today}
               onChange={(event) => setCustomEnd(event.target.value)}
+              disabled={generating}
             />
           </label>
         </div>
@@ -151,6 +142,7 @@ export function RetrospectiveFlow({
             key={item}
             className={type === item ? "selected" : ""}
             onClick={() => setType(item)}
+            disabled={generating}
           >
             {typeLabels[item]}
           </button>
@@ -170,6 +162,7 @@ export function RetrospectiveFlow({
                   : [...current, item],
               )
             }
+            disabled={generating}
           >
             {item}
           </button>
@@ -181,29 +174,9 @@ export function RetrospectiveFlow({
         disabled={generating || Boolean(rangeError)}
         onClick={submit}
       >
-        {generating ? "쌓인 기록을 회고 글로 엮고 있어요" : "생성하기"}
+        {generating ? "쌓인 기록을 회고 글로 엮고 있어요…" : "생성하기"}
       </button>
       {errorMessage ? <p className="formError">{errorMessage}</p> : null}
-
-      {result ? (
-        <>
-          <h3>{title}</h3>
-          <article className="markdownPreview">
-            <ReactMarkdown>{result}</ReactMarkdown>
-          </article>
-          <div className="sheetActions">
-            <button className="secondaryButton" onClick={copy}>
-              복사
-            </button>
-            <button className="secondaryButton" onClick={downloadMarkdown}>
-              Markdown 다운로드
-            </button>
-          </div>
-          <p className="platformGuide">
-            벨로그와 티스토리는 Markdown 그대로, 네이버블로그는 본문을 복사해 붙여넣으면 됩니다.
-          </p>
-        </>
-      ) : null}
     </BottomSheet>
   );
 }

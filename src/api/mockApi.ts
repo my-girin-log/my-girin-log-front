@@ -364,11 +364,8 @@ export const mockApi = {
     };
     db.diaries = [diary, ...db.diaries.filter((item) => item.dateKey !== dateKey)];
     db.pet = normalizePetAfterExp(db.pet.exp + 13);
-    db.chatSessionsByDate[dateKey] = {
-      ...session,
-      status: "rolled_up",
-      closedAt: new Date().toISOString(),
-    };
+    // 정리 완료된 세션 제거 → 다음 getChatsActive 호출 시 빈 세션이 새로 생김
+    delete db.chatSessionsByDate[dateKey];
     writeDb(db);
     return {
       success: true,

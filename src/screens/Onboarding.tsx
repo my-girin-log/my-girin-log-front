@@ -42,7 +42,7 @@ export function Onboarding({ onComplete }: { onComplete: () => Promise<void> }) 
       <section className="welcomeArt">
         <div className="welcomeBubble">안녕! 나는 너의 성장을 기록하는 실록이야.</div>
         <div className="welcomeCircle">
-          <img src={spriteModules["./giraffe_sprites/4-adolescent-good-1.png"]} alt="실록이" />
+          <img src={spriteModules["./giraffe_sprites/1-calf-good-1.png"]} alt="실록이" />
         </div>
       </section>
       <h1>반가워요!</h1>

@@ -92,6 +92,7 @@ function App() {
         {activeTab === "pet" && pet ? <PetScreen pet={pet} diaries={diaries} /> : null}
         {activeTab === "archive" && pet ? (
           <ArchiveScreen
+            pet={pet}
             diaries={diaries}
             retrospectives={retrospectives}
             onRefresh={refresh}

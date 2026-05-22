@@ -7,7 +7,8 @@ import { BottomSheet } from "../components/BottomSheet";
 import { Icon } from "../components/Icon";
 import { ListSection } from "../components/ListSection";
 import { RetrospectiveFlow } from "../components/RetrospectiveFlow";
-import { spriteModules } from "../sprites";
+import { RetrospectiveSheet } from "../components/RetrospectiveSheet";
+import { spriteUrl } from "../sprites";
 import { typeLabels } from "../constants";
 import { formatDateKey, toDateKey } from "../utils/date";
 import type { Diary, DiarySummary, PetState, Retrospective } from "../types";
@@ -19,6 +20,7 @@ function monthAnchor(date: Date): Date {
 }
 
 export function ArchiveScreen({
+  pet,
   diaries,
   retrospectives,
   onRefresh,
@@ -27,6 +29,7 @@ export function ArchiveScreen({
   autoOpenDateKey,
   onAutoOpened,
 }: {
+  pet: PetState;
   diaries: DiarySummary[];
   retrospectives: Retrospective[];
   onRefresh: () => Promise<void>;
@@ -97,7 +100,7 @@ export function ArchiveScreen({
   return (
     <section className="screen archiveScreen">
       <div className="archiveHero">
-        <img src={spriteModules["./giraffe_sprites/1-calf-good-1.png"]} alt="" />
+        <img src={spriteUrl(pet.meta.stateKey, 1)} alt="" />
         <div>
           <p>성장하는 당신을 응원해요!</p>
           <strong>{format(activeStartDate, "M월")}의 기록들</strong>
@@ -194,38 +197,20 @@ export function ArchiveScreen({
       {retroOpen ? (
         <RetrospectiveFlow
           onClose={() => setRetroOpen(false)}
-          onCreated={async (petUpdate) => {
+          onCreated={async (created, petUpdate) => {
             onPetChange(petUpdate);
+            setRetroOpen(false);
+            setSelectedRetro(created);
             await onRefresh();
           }}
         />
       ) : null}
 
       {selectedRetro ? (
-        <BottomSheet onClose={() => setSelectedRetro(null)} ariaLabel="회고 상세">
-          <h2>회고</h2>
-          <p className="muted">
-            {format(new Date(selectedRetro.range.startDate), "M/d")} ~{" "}
-            {format(new Date(selectedRetro.range.endDate), "M/d")}
-          </p>
-          <h3>{selectedRetro.title}</h3>
-          <article className="markdownPreview">
-            <ReactMarkdown>{selectedRetro.markdown}</ReactMarkdown>
-          </article>
-          <div className="tagRow">
-            {selectedRetro.tags.map((tag) => (
-              <span key={tag}>#{tag}</span>
-            ))}
-          </div>
-          <div className="sheetActions">
-            <button
-              className="secondaryButton"
-              onClick={() => navigator.clipboard.writeText(selectedRetro.markdown)}
-            >
-              복사
-            </button>
-          </div>
-        </BottomSheet>
+        <RetrospectiveSheet
+          retro={selectedRetro}
+          onClose={() => setSelectedRetro(null)}
+        />
       ) : null}
     </section>
   );

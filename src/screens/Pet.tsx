@@ -4,6 +4,8 @@ import type { DiarySummary, PetState } from "../types";
 import { format, subDays } from "date-fns";
 
 const CONDITION_LABEL = { good: "Good", bad: "Bad", terrible: "Terrible" } as const;
+const STAGE_LABEL = { calf: "Calf", adolescent: "Adolescent", adult: "Adult" } as const;
+const MAX_LEVEL = 2;
 
 const GRASS_WEEKS = 18;
 const GRASS_DAYS = GRASS_WEEKS * 7;
@@ -58,17 +60,27 @@ export function PetScreen({
       </div>
       <h2>실록이</h2>
       <div className="petBadge">
-        Level {pet.level} · Status: {conditionLabel}
+        Level {pet.level + 1} · {STAGE_LABEL[pet.stage]} · {conditionLabel}
       </div>
-      <div className="meterCard">
-        <div className="meterHeader">
-          <span>EXP</span>
-          <strong>{pet.exp} / 100</strong>
-        </div>
-        <div className="meterTrack">
-          <span style={{ width: `${pet.exp}%` }} />
-        </div>
-      </div>
+      {(() => {
+        const isMax = pet.level >= MAX_LEVEL;
+        const expIntoLevel = pet.expIntoLevel ?? pet.exp;
+        const levelUpExp = pet.levelUpExp ?? 100;
+        const percent = isMax ? 100 : Math.min(100, Math.round((expIntoLevel / levelUpExp) * 100));
+        return (
+          <div className="meterCard">
+            <div className="meterHeader">
+              <span>EXP</span>
+              <strong>
+                {isMax ? "MAX" : `${expIntoLevel} / ${levelUpExp}`}
+              </strong>
+            </div>
+            <div className="meterTrack">
+              <span style={{ width: `${percent}%` }} />
+            </div>
+          </div>
+        );
+      })()}
       <div className="grassCard" aria-label="최근 18주 기록 잔디">
         <div className="grassHeader">
           <div>
@@ -108,7 +120,17 @@ export function PetScreen({
       </div>
       <div className="tipCard">
         <Icon name="pet" />
-        <p>회고를 3번 더 작성하면 다음 레벨로 진화할 수 있어요!</p>
+        <p>
+          {pet.level >= MAX_LEVEL
+            ? "최고 단계 Adult에 도달했어요! 함께한 시간이 곧 회고의 깊이가 돼요."
+            : (() => {
+                const remaining = Math.max(
+                  0,
+                  (pet.levelUpExp ?? 100) - (pet.expIntoLevel ?? pet.exp),
+                );
+                return `다음 단계까지 EXP ${remaining} 남았어요. 메모 한 줄은 +2, 회고 한 편은 +10이에요.`;
+              })()}
+        </p>
       </div>
     </section>
   );
