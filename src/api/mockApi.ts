@@ -1,4 +1,4 @@
-import { addDays, format, isAfter, isBefore, parseISO, subDays } from "date-fns";
+import { format, isAfter, isBefore, parseISO, subDays } from "date-fns";
 import type {
   ChatMessage,
   DailyChatSession,
@@ -21,7 +21,8 @@ import type {
   UsersMeResponse,
 } from "../types";
 
-const STORAGE_KEY = "wootegotchi.mockDb.v1";
+const STORAGE_KEY = "my-girin-log.mockDb.v2";
+const LEGACY_STORAGE_KEYS = ["wootegotchi.mockDb.v1"];
 const API_BASE_URL = "/api/v1";
 
 type MockDb = {
@@ -29,7 +30,7 @@ type MockDb = {
   user: User;
   persona: Persona | null;
   pet: PetState;
-  activeSession: DailyChatSession;
+  chatSessionsByDate: Record<string, DailyChatSession>;
   diaries: Diary[];
   retrospectives: Retrospective[];
   nextId: number;
@@ -49,6 +50,10 @@ const PET_META_MAP: Record<`${PetLevel}_${PetCondition}`, Omit<PetMeta, "totalFr
 
 function todayKey() {
   return format(new Date(), "yyyy-MM-dd");
+}
+
+function formatDateKey(dateKey: string) {
+  return format(parseISO(dateKey), "M월 d일");
 }
 
 function stageForLevel(level: PetLevel): PetStage {
@@ -81,6 +86,22 @@ function createMessage(role: ChatMessage["role"], content: string, id: number): 
   };
 }
 
+function createInitialSession(dateKey: string, id: number, messageId: number): DailyChatSession {
+  return {
+    id,
+    dateKey,
+    messages: [
+      createMessage(
+        "assistant",
+        `${formatDateKey(dateKey)} 기록룸이 열렸어. 실록이가 오늘의 조각을 잘 모아둘게.`,
+        messageId,
+      ),
+    ],
+    status: "active",
+    startedAt: new Date().toISOString(),
+  };
+}
+
 function seedDb(): MockDb {
   const dateA = format(subDays(new Date(), 1), "yyyy-MM-dd");
   const dateB = format(subDays(new Date(), 2), "yyyy-MM-dd");
@@ -97,14 +118,8 @@ function seedDb(): MockDb {
     },
     persona: null,
     pet: buildPet(1, "good", 64),
-    activeSession: {
-      id: 789,
-      dateKey: todayKey(),
-      messages: [
-        createMessage("assistant", "안녕! 오늘 하루는 어땠어? 네 성장이 궁금해. 😊", 1),
-      ],
-      status: "active",
-      startedAt: new Date().toISOString(),
+    chatSessionsByDate: {
+      [todayKey()]: createInitialSession(todayKey(), 789, 1),
     },
     diaries: [
       {
@@ -145,14 +160,39 @@ function seedDb(): MockDb {
   };
 }
 
+function normalizeDb(input: (Partial<MockDb> & { activeSession?: DailyChatSession }) | null): MockDb {
+  const seeded = seedDb();
+  if (!input) return seeded;
+
+  const chatSessionsByDate =
+    input.chatSessionsByDate ??
+    (input.activeSession
+      ? { [input.activeSession.dateKey]: input.activeSession }
+      : seeded.chatSessionsByDate);
+
+  return {
+    token: input.token ?? seeded.token,
+    user: input.user ?? seeded.user,
+    persona: input.persona ?? seeded.persona,
+    pet: input.pet ?? seeded.pet,
+    chatSessionsByDate,
+    diaries: input.diaries ?? seeded.diaries,
+    retrospectives: input.retrospectives ?? seeded.retrospectives,
+    nextId: input.nextId ?? seeded.nextId,
+  };
+}
+
 function readDb(): MockDb {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) {
-    const seeded = seedDb();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
-    return seeded;
+    const legacyRaw = LEGACY_STORAGE_KEYS.map((key) => localStorage.getItem(key)).find(Boolean);
+    const db = normalizeDb(legacyRaw ? (JSON.parse(legacyRaw) as Partial<MockDb>) : null);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+    return db;
   }
-  return JSON.parse(raw) as MockDb;
+  const db = normalizeDb(JSON.parse(raw) as Partial<MockDb>);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+  return db;
 }
 
 function writeDb(db: MockDb) {
@@ -162,6 +202,14 @@ function writeDb(db: MockDb) {
 function nextId(db: MockDb) {
   db.nextId += 1;
   return db.nextId;
+}
+
+function getOrCreateSession(db: MockDb, dateKey: string): DailyChatSession {
+  const existing = db.chatSessionsByDate[dateKey];
+  if (existing) return existing;
+  const session = createInitialSession(dateKey, nextId(db), nextId(db));
+  db.chatSessionsByDate[dateKey] = session;
+  return session;
 }
 
 function normalizePetAfterExp(exp: number): PetState {
@@ -230,23 +278,30 @@ export const mockApi = {
     return persona;
   },
 
-  async getChatsActive(): Promise<DailyChatSession> {
+  async getOrCreateChatSession(dateKey: string): Promise<DailyChatSession> {
     const db = readDb();
-    return db.activeSession;
+    const session = getOrCreateSession(db, dateKey);
+    writeDb(db);
+    return session;
+  },
+
+  async getChatsActive(dateKey = todayKey()): Promise<DailyChatSession> {
+    return this.getOrCreateChatSession(dateKey);
   },
 
   async postChatsMessage(body: SendMessageRequest): Promise<SendMessageResponse> {
     const db = readDb();
+    const session = getOrCreateSession(db, body.dateKey);
     const userMessage = createMessage("user", body.content, nextId(db));
     const assistantMessage = createMessage(
       "assistant",
-      pickQuestion(body.content, db.activeSession.messages.length),
+      pickQuestion(body.content, session.messages.length),
       nextId(db),
     );
-    db.activeSession = {
-      ...db.activeSession,
-      id: body.sessionId,
-      messages: [...db.activeSession.messages, userMessage, assistantMessage],
+    db.chatSessionsByDate[body.dateKey] = {
+      ...session,
+      id: body.sessionId ?? session.id,
+      messages: [...session.messages, userMessage, assistantMessage],
     };
     const gained = 2;
     db.pet = {
@@ -263,33 +318,31 @@ export const mockApi = {
     };
   },
 
-  async postDiariesRollup(): Promise<RollupResponse> {
+  async postDiariesRollup(dateKey = todayKey()): Promise<RollupResponse> {
     const db = readDb();
-    const dateKey = db.activeSession.dateKey;
-    const userLines = db.activeSession.messages
+    const session = getOrCreateSession(db, dateKey);
+    const userLines = session.messages
       .filter((message) => message.role === "user")
       .map((message) => `- ${message.content}`);
-    const questionLines = db.activeSession.messages
+    const questionLines = session.messages
       .filter((message) => message.role === "assistant")
       .slice(1)
       .map((message) => `- Q. ${message.content}`);
     const diary: Diary = {
       id: nextId(db),
       dateKey,
-      title: "오늘의 기록 조각을 정리한 다이어리",
+      title: `${formatDateKey(dateKey)} 기록 조각을 정리한 다이어리`,
       markdown:
-        `# ${dateKey} 다이어리\n\n## 오늘의 조각\n${userLines.join("\n") || "- 아직 남긴 기록이 많지 않았습니다."}\n\n## AI가 물어본 것\n${questionLines.join("\n") || "- 오늘은 짧은 안부만 남겼습니다."}\n\n## 나중에 다시 볼 단서\n- 오늘 남긴 표현을 바탕으로 다음 회고에서 원인, 감정, 다음 액션을 이어서 확인하기.`,
+        `# ${dateKey} 다이어리\n\n## ${formatDateKey(dateKey)}의 조각\n${userLines.join("\n") || "- 아직 남긴 기록이 많지 않았습니다."}\n\n## 실록이가 물어본 것\n${questionLines.join("\n") || "- 이 날짜에는 짧은 안부만 남겼습니다."}\n\n## 나중에 다시 볼 단서\n- ${formatDateKey(dateKey)}에 남긴 표현을 바탕으로 다음 회고에서 원인, 감정, 다음 액션을 이어서 확인하기.`,
       emotionEmoji: "🤔",
-      tags: ["오늘기록", "회고재료"],
+      tags: ["날짜기록", "회고재료"],
     };
     db.diaries = [diary, ...db.diaries.filter((item) => item.dateKey !== dateKey)];
     db.pet = normalizePetAfterExp(db.pet.exp + 13);
-    db.activeSession = {
-      id: nextId(db),
-      dateKey: format(addDays(new Date(), 1), "yyyy-MM-dd"),
-      messages: [createMessage("assistant", "새 기록룸이 열렸어. 오늘도 짧게 남겨볼까?", nextId(db))],
-      status: "active",
-      startedAt: new Date().toISOString(),
+    db.chatSessionsByDate[dateKey] = {
+      ...session,
+      status: "rolled_up",
+      closedAt: new Date().toISOString(),
     };
     writeDb(db);
     return {
@@ -354,7 +407,7 @@ export const mockApi = {
       retrospectiveId: nextId(db),
       title,
       markdown:
-        `# ${title}\n\n${sourceDiaries.length}개의 다이어리를 바탕으로 이번 기록을 다시 엮어봤습니다.\n\n## 기록에서 보인 흐름\n${sourceDiaries.map((diary) => `- ${diary.dateKey}: ${diary.title}`).join("\n") || "- 아직 선택한 기간에 다이어리가 많지 않아, 오늘의 기록을 중심으로 정리했습니다."}\n\n## 이번 회고의 방향\n- 글 종류: ${body.type}\n- 작성 방식: ${body.promptOptions.join(", ") || "기본"}\n\n## 배운 점\n처음에는 막막했던 문제도 기록으로 남기니 판단 과정이 보였습니다. 다음에는 문제를 만난 순간의 감정과 선택지를 조금 더 빠르게 적어두면 좋겠습니다.\n\n## 다음 액션\n다음 기록에서는 원인, 선택한 해결책, 다시 적용할 기준을 한 문장씩 남겨보겠습니다.`,
+        `# ${title}\n\n${sourceDiaries.length}개의 다이어리를 바탕으로 이번 기록을 다시 엮어봤습니다.\n\n## 기록에서 보인 흐름\n${sourceDiaries.map((diary) => `- ${diary.dateKey}: ${diary.title}`).join("\n") || "- 아직 선택한 기간에 다이어리가 많지 않아, 선택한 날짜의 기록을 중심으로 정리했습니다."}\n\n## 이번 회고의 방향\n- 글 종류: ${body.type}\n- 작성 방식: ${body.promptOptions.join(", ") || "기본"}\n\n## 배운 점\n처음에는 막막했던 문제도 기록으로 남기니 판단 과정이 보였습니다. 다음에는 문제를 만난 순간의 감정과 선택지를 조금 더 빠르게 적어두면 좋겠습니다.\n\n## 다음 액션\n다음 기록에서는 원인, 선택한 해결책, 다시 적용할 기준을 한 문장씩 남겨보겠습니다.`,
       tags: ["우테코", "회고"],
       type: body.type,
       range: {

@@ -63,7 +63,8 @@ export type DailyChatSession = {
 };
 
 export type SendMessageRequest = {
-  sessionId: number;
+  sessionId?: number;
+  dateKey: string;
   content: string;
 };
 

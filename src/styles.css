@@ -1,19 +1,24 @@
 :root {
-  color: #20241f;
-  background: #f7f5f2;
+  color: #1e2128;
+  background: #f0f2f8;
   font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    Inter, Pretendard, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  --green: #078229;
-  --green-strong: #067523;
-  --green-soft: #e9f6ec;
-  --line: #c9d6c8;
-  --muted: #6f776f;
-  --surface: #fffdfb;
-  --soft: #f2f0ed;
-  --yellow: #ffd84e;
-  --danger: #b91c1c;
+  --mint: #aee6c5;
+  --mint-soft: #dff5e8;
+  --forest: #285b43;
+  --bg: #f0f2f8;
+  --surface: #ffffff;
+  --ink: #1e2128;
+  --muted: #606775;
+  --lavender: #e2e2f6;
+  --yellow: #ffd95a;
+  --danger: #d94b4b;
+  --shadow: 3px 3px 0 var(--ink);
+  --border: 2px solid var(--ink);
+  --mono: "Roboto Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 * {
@@ -23,6 +28,10 @@
 body {
   margin: 0;
   min-width: 320px;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(30, 33, 40, 0.12) 1px, transparent 0) 0 0 / 18px
+      18px,
+    var(--bg);
 }
 
 button,
@@ -36,21 +45,30 @@ button {
   cursor: pointer;
 }
 
+button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
 .appShell,
 .onboarding {
   width: min(100%, 520px);
   min-height: 100vh;
   margin: 0 auto;
-  background: var(--surface);
-  border-inline: 1px solid #ece8e2;
   position: relative;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(30, 33, 40, 0.09) 1px, transparent 0) 0 0 / 18px
+      18px,
+    var(--bg);
+  border-inline: var(--border);
 }
 
 .centerOnly {
   display: grid;
   place-items: center;
-  color: var(--green);
-  font-weight: 800;
+  color: var(--forest);
+  font-family: var(--mono);
+  font-weight: 900;
 }
 
 .appHeader {
@@ -60,33 +78,47 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 54px;
-  padding: 0 22px;
-  background: rgba(255, 253, 251, 0.94);
-  border-bottom: 1px solid var(--line);
-  backdrop-filter: blur(12px);
+  min-height: 58px;
+  padding: 8px 16px;
+  background: var(--surface);
+  border-bottom: var(--border);
 }
 
 .appHeader h1 {
   margin: 0;
-  color: var(--green);
-  font-size: 25px;
-  font-weight: 900;
+  color: var(--ink);
+  font-size: 19px;
+  font-weight: 950;
   letter-spacing: 0;
+  line-height: 1.15;
+}
+
+.appHeader h1::before {
+  content: "[APP] ";
+  color: var(--forest);
+  font-family: var(--mono);
+  font-size: 12px;
 }
 
 .appMain {
-  min-height: calc(100vh - 126px);
-  padding-bottom: 86px;
+  min-height: calc(100vh - 130px);
+  padding-bottom: 88px;
 }
 
 .screen {
-  padding: 16px 20px 24px;
+  padding: 16px 18px 24px;
+}
+
+.homeScreen {
+  background:
+    linear-gradient(rgba(240, 242, 248, 0.9), rgba(240, 242, 248, 0.9)),
+    radial-gradient(circle at 1px 1px, rgba(30, 33, 40, 0.18) 1px, transparent 0) 0 0 / 14px
+      14px;
 }
 
 .icon {
-  width: 21px;
-  height: 21px;
+  width: 20px;
+  height: 20px;
   fill: currentColor;
   flex: 0 0 auto;
 }
@@ -96,20 +128,21 @@ button {
   width: 38px;
   height: 38px;
   place-items: center;
-  border-radius: 999px;
-  background: transparent;
-  color: #344036;
+  border: var(--border);
+  border-radius: 3px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow);
 }
 
 .iconButton span {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
+  width: 100%;
+  height: 100%;
+  font-family: var(--mono);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 900;
 }
 
 .primaryButton,
@@ -122,51 +155,52 @@ button {
   justify-content: center;
   gap: 8px;
   min-height: 46px;
-  border-radius: 8px;
-  padding: 0 16px;
-  font-weight: 800;
+  border: var(--border);
+  border-radius: 3px;
+  padding: 0 14px;
+  font-weight: 900;
+  box-shadow: var(--shadow);
 }
 
 .primaryButton {
   width: 100%;
-  background: var(--green);
-  color: white;
-  box-shadow: 0 10px 24px rgba(7, 130, 41, 0.16);
+  background: var(--forest);
+  color: #fff;
 }
 
 .primaryButton:disabled {
-  opacity: 0.65;
+  opacity: 0.7;
   cursor: progress;
 }
 
 .primaryButton.dark {
-  background: #20242a;
+  background: var(--ink);
 }
 
 .secondaryButton {
-  background: var(--green-soft);
-  color: var(--green);
+  background: var(--mint);
+  color: var(--ink);
 }
 
 .dangerButton {
-  background: #fff1f1;
+  background: #ffe6e6;
   color: var(--danger);
 }
 
 .softButton {
-  min-height: 34px;
-  border: 1px solid var(--line);
-  background: #fff;
-  color: var(--green);
-  font-size: 13px;
+  min-height: 36px;
+  background: var(--surface);
+  color: var(--forest);
+  font-family: var(--mono);
+  font-size: 12px;
   margin-left: auto;
 }
 
 .textAction {
   width: 100%;
   margin: 8px 0 14px;
-  background: var(--green-soft);
-  color: var(--green);
+  background: var(--mint);
+  color: var(--ink);
 }
 
 .muted {
@@ -177,68 +211,92 @@ button {
 .statusLine {
   display: flex;
   align-items: center;
-  gap: 7px;
-  margin: 4px 0 20px;
-  color: #415143;
-  font-size: 13px;
-  font-weight: 700;
+  gap: 8px;
+  margin: 4px 0 18px;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
 .statusDot,
 .calendarDot {
   display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--green);
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  background: var(--forest);
 }
 
 .interactionBand {
   display: grid;
-  grid-template-columns: 56px 1fr;
+  grid-template-columns: 64px 1fr;
   align-items: center;
   gap: 12px;
-  padding: 14px 0 18px;
-  border-bottom: 1px solid var(--line);
+  padding: 12px;
+  border: var(--border);
+  border-radius: 3px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .interactionBand img {
-  width: 52px;
-  height: 52px;
+  width: 54px;
+  height: 54px;
   object-fit: contain;
   padding: 4px;
-  border-radius: 999px;
-  background: var(--green-soft);
+  border: var(--border);
+  border-radius: 3px;
+  background: var(--mint);
+  image-rendering: pixelated;
 }
 
 .interactionBand p {
   margin: 0;
-  font-size: 21px;
-  font-weight: 900;
+  font-size: 19px;
+  font-weight: 950;
+  line-height: 1.2;
 }
 
 .interactionBand span {
   display: block;
-  margin-top: 4px;
+  margin-top: 5px;
   color: var(--muted);
-  font-size: 13px;
+  font-family: var(--mono);
+  font-size: 11px;
 }
 
 .chatLog {
   display: flex;
-  min-height: calc(100vh - 310px);
+  min-height: calc(100vh - 320px);
   flex-direction: column;
-  gap: 14px;
-  padding: 20px 8px;
+  gap: 18px;
+  padding: 22px 4px;
 }
 
 .messageBubble {
-  width: min(84%, 390px);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 14px 14px 9px;
+  position: relative;
+  width: min(86%, 390px);
+  border: var(--border);
+  border-radius: 3px;
+  padding: 18px 13px 10px;
   line-height: 1.55;
-  box-shadow: 0 4px 14px rgba(31, 41, 31, 0.04);
+  box-shadow: var(--shadow);
+}
+
+.speakerLabel {
+  position: absolute;
+  top: -13px;
+  left: 10px;
+  padding: 2px 6px;
+  border: var(--border);
+  background: var(--yellow);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 900;
 }
 
 .messageBubble p {
@@ -247,42 +305,39 @@ button {
 
 .messageBubble time {
   display: block;
-  margin-top: 8px;
-  color: #8a9189;
-  font-size: 11px;
+  margin-top: 9px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 10px;
   text-align: right;
 }
 
 .messageBubble.user {
   align-self: flex-end;
-  background: #fffdfb;
+  background: var(--mint);
 }
 
 .messageBubble.assistant {
   align-self: flex-start;
-  background: var(--green);
-  border-color: var(--green);
-  color: white;
+  background: var(--surface);
 }
 
 .messageBubble.assistant:first-child {
-  background: #fffdfb;
-  border-color: var(--line);
-  color: #20241f;
+  background: var(--lavender);
 }
 
 .composer {
   position: sticky;
-  bottom: 72px;
+  bottom: 76px;
   display: grid;
   grid-template-columns: 40px 1fr 40px;
   align-items: center;
   gap: 8px;
   padding: 7px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: rgba(255, 253, 251, 0.96);
-  box-shadow: 0 10px 24px rgba(31, 41, 31, 0.08);
+  border: var(--border);
+  border-radius: 3px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .composer input {
@@ -290,6 +345,8 @@ button {
   border: 0;
   outline: 0;
   background: transparent;
+  font-family: var(--mono);
+  font-size: 12px;
 }
 
 .sendButton {
@@ -297,9 +354,11 @@ button {
   width: 36px;
   height: 36px;
   place-items: center;
-  border-radius: 8px;
-  background: var(--green);
+  border: var(--border);
+  border-radius: 3px;
+  background: var(--forest);
   color: white;
+  box-shadow: var(--shadow);
 }
 
 .petScreen {
@@ -310,23 +369,24 @@ button {
   display: inline-block;
   position: relative;
   margin: 10px auto 20px;
-  padding: 13px 34px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: white;
-  font-weight: 700;
+  padding: 13px 24px;
+  border: var(--border);
+  border-radius: 3px;
+  background: var(--surface);
+  font-weight: 900;
+  box-shadow: var(--shadow);
 }
 
 .petSpeech::after {
   content: "";
   position: absolute;
   left: 50%;
-  bottom: -8px;
+  bottom: -9px;
   width: 14px;
   height: 14px;
-  background: white;
-  border-right: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  border-right: var(--border);
+  border-bottom: var(--border);
   transform: translateX(-50%) rotate(45deg);
 }
 
@@ -336,7 +396,10 @@ button {
   width: 210px;
   height: 210px;
   margin: 0 auto 18px;
-  background: linear-gradient(#eee8bb, #eff4d2);
+  border: var(--border);
+  border-radius: 3px;
+  background: var(--mint-soft);
+  box-shadow: var(--shadow);
   overflow: hidden;
 }
 
@@ -345,22 +408,33 @@ button {
   height: 190px;
   padding: 10px;
   object-fit: contain;
+  image-rendering: pixelated;
 }
 
 .petScreen h2 {
   margin: 0 0 8px;
-  font-size: 22px;
+  font-size: 24px;
+  font-weight: 950;
+}
+
+.petScreen h2::before {
+  content: "[PET] ";
+  color: var(--forest);
+  font-family: var(--mono);
+  font-size: 13px;
 }
 
 .petBadge {
   display: inline-flex;
-  margin-bottom: 26px;
-  padding: 7px 14px;
-  border-radius: 999px;
-  background: #ffdf65;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 13px;
-  font-weight: 800;
+  margin-bottom: 24px;
+  padding: 7px 12px;
+  border: var(--border);
+  border-radius: 3px;
+  background: var(--yellow);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 900;
+  box-shadow: var(--shadow);
 }
 
 .meterCard,
@@ -371,9 +445,10 @@ button {
 .listCard,
 .setupCard,
 .personaPreview {
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  border: var(--border);
+  border-radius: 3px;
   background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .meterCard {
@@ -384,27 +459,34 @@ button {
 .meterHeader {
   display: flex;
   justify-content: space-between;
-  color: #526052;
+  color: var(--ink);
+  font-family: var(--mono);
   font-size: 12px;
+  font-weight: 900;
+}
+
+.meterHeader span::before {
+  content: "CONNECTION: LOCAL MOCK · ";
+  color: var(--forest);
 }
 
 .meterHeader strong {
-  color: var(--green);
+  color: var(--forest);
 }
 
 .meterTrack {
-  height: 13px;
+  height: 15px;
   margin-top: 10px;
   overflow: hidden;
-  border-radius: 999px;
-  background: #eee9e9;
+  border: var(--border);
+  border-radius: 0;
+  background: var(--bg);
 }
 
 .meterTrack span {
   display: block;
   height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--green), #75b379);
+  background: var(--forest);
 }
 
 .statGrid {
@@ -418,19 +500,21 @@ button {
 .statGrid > div {
   display: grid;
   gap: 8px;
-  padding: 16px;
+  padding: 14px;
 }
 
 .statGrid .icon {
-  color: var(--green);
+  color: var(--forest);
 }
 
 .statGrid span {
-  color: #636c63;
-  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
 }
 
 .statGrid strong {
+  font-family: var(--mono);
   font-size: 22px;
 }
 
@@ -441,16 +525,17 @@ button {
   align-items: center;
   padding: 14px;
   text-align: left;
-  background: #fffaf8;
+  background: var(--lavender);
 }
 
 .tipCard .icon {
   width: 36px;
   height: 36px;
-  padding: 8px;
-  border-radius: 8px;
-  background: #91ff9c;
-  color: var(--green);
+  padding: 7px;
+  border: var(--border);
+  border-radius: 3px;
+  background: var(--mint);
+  color: var(--ink);
 }
 
 .tipCard p {
@@ -471,8 +556,10 @@ button {
   width: 44px;
   height: 44px;
   object-fit: contain;
-  border-radius: 50%;
-  background: var(--soft);
+  border: var(--border);
+  border-radius: 3px;
+  background: var(--mint);
+  image-rendering: pixelated;
 }
 
 .archiveHero p,
@@ -482,10 +569,12 @@ button {
 
 .archiveHero p {
   color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12px;
 }
 
 .calendarCard {
-  padding: 16px 14px 18px;
+  padding: 14px;
   margin-bottom: 18px;
 }
 
@@ -498,13 +587,20 @@ button {
 
 .sectionTitle h2 {
   margin: 0;
-  font-size: 16px;
+  font-family: var(--mono);
+  font-size: 15px;
+}
+
+.sectionTitle h2::before {
+  content: "[ARCHIVE] ";
+  color: var(--forest);
 }
 
 .sectionTitle button {
   background: transparent;
-  color: var(--green);
-  font-weight: 800;
+  color: var(--forest);
+  font-family: var(--mono);
+  font-weight: 900;
 }
 
 .react-calendar {
@@ -518,8 +614,9 @@ button {
 }
 
 .react-calendar__month-view__weekdays {
-  color: #9b9f9b;
-  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
   text-decoration: none;
 }
 
@@ -529,27 +626,34 @@ button {
 
 .react-calendar__tile {
   position: relative;
-  min-height: 48px;
-  background: transparent;
-  border-radius: 8px;
-  color: #1f241f;
+  min-height: 44px;
+  margin: 2px;
+  border: 2px solid transparent;
+  border-radius: 0;
+  background: #f8f9fc;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-weight: 800;
 }
 
 .react-calendar__tile:enabled:hover,
 .react-calendar__tile:enabled:focus,
 .react-calendar__tile--active {
-  background: var(--green-soft);
-  color: var(--green);
+  border-color: var(--ink);
+  background: var(--mint);
+  color: var(--ink);
 }
 
 .react-calendar__tile--now {
-  outline: 1px solid var(--line);
+  border-color: var(--forest);
 }
 
 .calendarDot {
   position: absolute;
   left: 50%;
-  bottom: 8px;
+  bottom: 6px;
+  width: 8px;
+  height: 8px;
   transform: translateX(-50%);
 }
 
@@ -567,11 +671,11 @@ button {
 }
 
 .listCard strong {
-  color: var(--green);
+  color: var(--ink);
 }
 
 .listCard span {
-  color: #3d463d;
+  color: var(--muted);
   line-height: 1.5;
 }
 
@@ -584,11 +688,10 @@ button {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   width: min(100%, 520px);
-  height: 72px;
+  height: 74px;
   margin: 0 auto;
-  border-top: 1px solid var(--line);
-  background: rgba(255, 253, 251, 0.96);
-  backdrop-filter: blur(14px);
+  border-top: var(--border);
+  background: var(--surface);
 }
 
 .bottomNav button {
@@ -596,18 +699,19 @@ button {
   place-items: center;
   gap: 3px;
   background: transparent;
-  color: #4d574d;
+  color: var(--ink);
+  font-family: var(--mono);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 900;
 }
 
 .bottomNav button.active {
-  color: var(--green);
+  background: var(--mint);
 }
 
 .bottomNav .icon {
-  width: 23px;
-  height: 23px;
+  width: 22px;
+  height: 22px;
 }
 
 .sheetOverlay {
@@ -621,7 +725,7 @@ button {
 .sheetBackdrop {
   position: absolute;
   inset: 0;
-  background: rgba(18, 24, 18, 0.36);
+  background: rgba(30, 33, 40, 0.45);
 }
 
 .bottomSheet {
@@ -631,18 +735,21 @@ button {
   margin: 0 auto;
   padding: 12px 20px 24px;
   overflow: auto;
-  border-radius: 18px 18px 0 0;
+  border: var(--border);
+  border-bottom: 0;
+  border-radius: 3px 3px 0 0;
   background: var(--surface);
-  box-shadow: 0 -20px 42px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 -4px 0 var(--ink);
 }
 
 .sheetHandle {
   display: block;
-  width: 46px;
-  height: 5px;
+  width: 48px;
+  height: 8px;
   margin: 0 auto 18px;
-  border-radius: 999px;
-  background: #ccd5cc;
+  border: var(--border);
+  border-radius: 0;
+  background: var(--mint);
 }
 
 .bottomSheet h2 {
@@ -658,8 +765,8 @@ button {
   max-height: 360px;
   overflow: auto;
   padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  border: var(--border);
+  border-radius: 3px;
   background: #fff;
   line-height: 1.65;
 }
@@ -674,8 +781,8 @@ button {
   width: 100%;
   min-height: 300px;
   padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  border: var(--border);
+  border-radius: 3px;
   resize: vertical;
   line-height: 1.6;
 }
@@ -707,19 +814,18 @@ button {
 
 .choiceGroup button {
   min-height: 40px;
-  padding: 0 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  padding: 0 9px;
+  border: var(--border);
+  border-radius: 3px;
   background: #fff;
-  color: #3b453b;
-  font-size: 13px;
-  font-weight: 800;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 900;
+  box-shadow: var(--shadow);
 }
 
 .choiceGroup button.selected {
-  border-color: var(--green);
-  background: var(--green-soft);
-  color: var(--green);
+  background: var(--mint);
 }
 
 .tagRow {
@@ -731,11 +837,13 @@ button {
 
 .tagRow span {
   padding: 5px 9px;
-  border-radius: 999px;
-  background: var(--green-soft);
-  color: var(--green);
-  font-size: 12px;
-  font-weight: 800;
+  border: var(--border);
+  border-radius: 3px;
+  background: var(--lavender);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 900;
 }
 
 .platformGuide {
@@ -754,20 +862,21 @@ button {
 
 .progressDots {
   display: flex;
-  gap: 6px;
+  gap: 7px;
   margin-bottom: 26px;
 }
 
 .progressDots span {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: #cdd6cd;
+  width: 10px;
+  height: 10px;
+  border: var(--border);
+  border-radius: 0;
+  background: #fff;
 }
 
 .progressDots span.active {
-  width: 28px;
-  background: var(--green);
+  width: 30px;
+  background: var(--mint);
 }
 
 .welcomeArt {
@@ -783,34 +892,39 @@ button {
   height: 150px;
   place-items: center;
   overflow: hidden;
-  border-radius: 999px;
-  background: linear-gradient(150deg, #f0edcf, #c7ead4);
+  border: var(--border);
+  border-radius: 3px;
+  background: var(--mint);
+  box-shadow: var(--shadow);
 }
 
 .welcomeCircle img {
   width: 112px;
   height: 132px;
   object-fit: contain;
+  image-rendering: pixelated;
 }
 
 .welcomeBubble {
   position: absolute;
   top: 8px;
   left: 92px;
-  width: 150px;
+  width: 158px;
   padding: 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  border: var(--border);
+  border-radius: 3px;
   background: white;
   text-align: left;
-  font-size: 13px;
+  font-family: var(--mono);
+  font-size: 12px;
   line-height: 1.45;
-  box-shadow: 0 8px 18px rgba(31, 41, 31, 0.08);
+  box-shadow: var(--shadow);
 }
 
 .onboarding h1 {
   margin: 0 0 8px;
   font-size: 28px;
+  font-weight: 950;
 }
 
 .setupCard,
@@ -826,18 +940,23 @@ button {
 .setupCard label {
   display: grid;
   gap: 7px;
-  color: #3f493f;
-  font-weight: 800;
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.setupCard label::first-line {
+  font-family: var(--mono);
 }
 
 .setupCard input,
 .setupCard textarea {
   width: 100%;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  border: var(--border);
+  border-radius: 3px;
   padding: 12px;
   outline: 0;
   background: #fff;
+  box-shadow: var(--shadow);
 }
 
 .setupCard textarea {
@@ -852,10 +971,12 @@ button {
 }
 
 .inlineInput button {
-  border-radius: 8px;
-  background: var(--green-soft);
-  color: var(--green);
-  font-weight: 800;
+  border: var(--border);
+  border-radius: 3px;
+  background: var(--mint);
+  color: var(--ink);
+  font-weight: 900;
+  box-shadow: var(--shadow);
 }
 
 .chips {
@@ -868,11 +989,14 @@ button {
   max-width: 100%;
   overflow: hidden;
   padding: 7px 10px;
-  border-radius: 999px;
-  background: var(--green-soft);
-  color: var(--green);
+  border: var(--border);
+  border-radius: 3px;
+  background: var(--lavender);
+  color: var(--ink);
+  font-family: var(--mono);
   text-overflow: ellipsis;
   white-space: nowrap;
+  box-shadow: var(--shadow);
 }
 
 .personaPreview {
@@ -880,6 +1004,10 @@ button {
 }
 
 @media (max-width: 380px) {
+  .appHeader h1 {
+    font-size: 17px;
+  }
+
   .screen {
     padding-inline: 14px;
   }

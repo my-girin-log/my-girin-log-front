@@ -1,14 +1,13 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import Calendar from "react-calendar";
 import ReactMarkdown from "react-markdown";
-import { endOfWeek, format, startOfWeek, subDays } from "date-fns";
+import { endOfWeek, format, parseISO, startOfWeek, subDays } from "date-fns";
 import { mockApi } from "./api/mockApi";
 import type {
   DailyChatSession,
   Diary,
   DiarySummary,
   PetState,
-  Persona,
   Retrospective,
   RetrospectiveRequest,
   RetrospectiveType,
@@ -36,6 +35,18 @@ const promptOptions = [
   "내 말투 강하게",
   "짧고 담백하게",
 ];
+
+function todayKey() {
+  return format(new Date(), "yyyy-MM-dd");
+}
+
+function formatDateKey(dateKey: string) {
+  return format(parseISO(dateKey), "M월 d일");
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
 
 function Icon({ name }: { name: "home" | "pet" | "archive" | "send" | "mic" | "spark" | "book" }) {
   const paths = {
@@ -77,12 +88,13 @@ function App() {
   const [diaries, setDiaries] = useState<DiarySummary[]>([]);
   const [retrospectives, setRetrospectives] = useState<Retrospective[]>([]);
   const [activeTab, setActiveTab] = useState<TabKey>("home");
+  const [selectedDateKey, setSelectedDateKey] = useState(todayKey());
   const [loading, setLoading] = useState(true);
 
-  async function refresh() {
+  async function refresh(dateKey = selectedDateKey) {
     const [me, activeSession, diaryList, retroList] = await Promise.all([
       mockApi.getUsersMe(),
-      mockApi.getChatsActive(),
+      mockApi.getChatsActive(dateKey),
       mockApi.getDiaries(),
       mockApi.getRetrospectives(),
     ]);
@@ -99,17 +111,17 @@ function App() {
   }, []);
 
   if (loading) {
-    return <div className="appShell centerOnly">우테고치를 깨우는 중...</div>;
+    return <div className="appShell centerOnly">내가그린기린기록을 깨우는 중...</div>;
   }
 
   if (!user?.hasPersona) {
-    return <Onboarding onComplete={refresh} />;
+    return <Onboarding onComplete={() => refresh(selectedDateKey)} />;
   }
 
   return (
     <div className="appShell">
       <header className="appHeader">
-        <h1>우테고치</h1>
+        <h1>내가그린기린기록</h1>
         <button className="iconButton" aria-label="프로필">
           <span>{user.nickname.slice(0, 1)}</span>
         </button>
@@ -123,11 +135,12 @@ function App() {
             onPetChange={setPet}
             onSessionChange={setSession}
             onRollup={async () => {
-              await mockApi.postDiariesRollup();
-              await refresh();
+              await mockApi.postDiariesRollup(selectedDateKey);
+              await refresh(selectedDateKey);
               setActiveTab("archive");
             }}
             onOpenArchive={() => setActiveTab("archive")}
+            selectedDateKey={selectedDateKey}
           />
         ) : null}
         {activeTab === "pet" && pet ? <PetScreen pet={pet} diaries={diaries} /> : null}
@@ -137,7 +150,13 @@ function App() {
             retrospectives={retrospectives}
             onRefresh={refresh}
             onPetChange={setPet}
-            onOpenHome={() => setActiveTab("home")}
+            onOpenHome={async (dateKey) => {
+              setSelectedDateKey(dateKey);
+              const nextSession = await mockApi.getChatsActive(dateKey);
+              setSession(nextSession);
+              setActiveTab("home");
+              window.scrollTo({ top: 0 });
+            }}
           />
         ) : null}
       </main>
@@ -153,7 +172,6 @@ function Onboarding({ onComplete }: { onComplete: () => Promise<void> }) {
   const [link, setLink] = useState("");
   const [sources, setSources] = useState<string[]>([]);
   const [rawText, setRawText] = useState("");
-  const [persona, setPersona] = useState<Persona | null>(null);
   const [creating, setCreating] = useState(false);
 
   function addLink() {
@@ -168,12 +186,12 @@ function Onboarding({ onComplete }: { onComplete: () => Promise<void> }) {
       <div className="progressDots">
         <span className="active" />
         <span className={loggedIn ? "active" : ""} />
-        <span className={persona ? "active" : ""} />
+        <span className={creating ? "active" : ""} />
       </div>
       <section className="welcomeArt">
-        <div className="welcomeBubble">안녕! 나는 너의 성장을 돕는 우테고치야.</div>
+        <div className="welcomeBubble">안녕! 나는 너의 성장을 기록하는 실록이야.</div>
         <div className="welcomeCircle">
-          <img src={spriteModules["./giraffe_sprites/4-adolescent-good-1.png"]} alt="기린이" />
+          <img src={spriteModules["./giraffe_sprites/4-adolescent-good-1.png"]} alt="실록이" />
         </div>
       </section>
       <h1>반가워요!</h1>
@@ -231,31 +249,16 @@ function Onboarding({ onComplete }: { onComplete: () => Promise<void> }) {
             disabled={creating}
             onClick={async () => {
               setCreating(true);
-              const nextPersona = await mockApi.postUsersOnboarding({ sources, rawText, nickname });
-              setPersona(nextPersona);
-              setCreating(false);
+              await delay(750);
+              await mockApi.postUsersOnboarding({ sources, rawText, nickname });
+              await onComplete();
+              window.scrollTo({ top: 0 });
             }}
           >
             {creating ? "글쓰기 습관을 읽고 있어요" : "페르소나 만들기"}
           </button>
         </div>
       )}
-
-      {persona ? (
-        <section className="personaPreview">
-          <strong>{persona.summary}</strong>
-          <ReactMarkdown>{persona.markdown}</ReactMarkdown>
-          <button
-            className="primaryButton"
-            onClick={async () => {
-              await onComplete();
-              window.scrollTo({ top: 0 });
-            }}
-          >
-            기록룸으로 가기
-          </button>
-        </section>
-      ) : null}
     </div>
   );
 }
@@ -267,6 +270,7 @@ function HomeScreen({
   onSessionChange,
   onRollup,
   onOpenArchive,
+  selectedDateKey,
 }: {
   pet: PetState;
   session: DailyChatSession;
@@ -274,6 +278,7 @@ function HomeScreen({
   onSessionChange: (session: DailyChatSession) => void;
   onRollup: () => Promise<void>;
   onOpenArchive: () => void;
+  selectedDateKey: string;
 }) {
   const sprite = useSpriteFrame(pet);
   const [message, setMessage] = useState("");
@@ -285,8 +290,11 @@ function HomeScreen({
     if (!content || sending) return;
     setMessage("");
     setSending(true);
-    await mockApi.postChatsMessage({ sessionId: session.id, content });
-    const [nextSession, me] = await Promise.all([mockApi.getChatsActive(), mockApi.getUsersMe()]);
+    await mockApi.postChatsMessage({ sessionId: session.id, dateKey: selectedDateKey, content });
+    const [nextSession, me] = await Promise.all([
+      mockApi.getChatsActive(selectedDateKey),
+      mockApi.getUsersMe(),
+    ]);
     onSessionChange(nextSession);
     onPetChange(me.pet);
     setSending(false);
@@ -296,21 +304,22 @@ function HomeScreen({
     <section className="screen homeScreen">
       <div className="statusLine">
         <span className="statusDot" />
-        오늘 기록 중
+        {formatDateKey(selectedDateKey)} 기록 중
         <button className="softButton" onClick={onRollup}>
-          <Icon name="spark" /> 오늘 기록 정리하기
+          <Icon name="spark" /> {formatDateKey(selectedDateKey)} 기록 정리하기
         </button>
       </div>
       <div className="interactionBand">
-        <img src={sprite} alt="기린이" />
+        <img src={sprite} alt="실록이" />
         <div>
-          <p>{session.messages.length > 2 ? "질문 대답해줘!" : "오늘 어땠어?"}</p>
-          <span>{format(new Date(), "yyyy.MM.dd")}</span>
+          <p>{session.messages.length > 2 ? "질문 대답해줘!" : `${formatDateKey(selectedDateKey)} 어땠어?`}</p>
+          <span>{format(parseISO(selectedDateKey), "yyyy.MM.dd")} · SESSION LOG</span>
         </div>
       </div>
       <div className="chatLog">
         {session.messages.map((item) => (
           <article key={item.id} className={`messageBubble ${item.role}`}>
+            <span className="speakerLabel">{item.role === "user" ? "[USER]" : "[SILOK]"}</span>
             <p>{item.content}</p>
             <time>{format(new Date(item.createdAt), "a h:mm")}</time>
           </article>
@@ -328,7 +337,7 @@ function HomeScreen({
         <input
           value={message}
           onChange={(event) => setMessage(event.target.value)}
-          placeholder="오늘의 생각을 적어보세요..."
+          placeholder={`${formatDateKey(selectedDateKey)}의 생각을 적어보세요...`}
         />
         <button className="sendButton" type="submit" aria-label="전송">
           <Icon name="send" />
@@ -348,7 +357,7 @@ function PetScreen({ pet, diaries }: { pet: PetState; diaries: DiarySummary[] })
       <div className="petStage">
         <img src={sprite} alt="성장 중인 기린" />
       </div>
-      <h2>기린이</h2>
+      <h2>실록이</h2>
       <div className="petBadge">Level {pet.level} · Status: {conditionLabel}</div>
       <div className="meterCard">
         <div className="meterHeader">
@@ -390,7 +399,7 @@ function ArchiveScreen({
   retrospectives: Retrospective[];
   onRefresh: () => Promise<void>;
   onPetChange: (pet: PetState) => void;
-  onOpenHome: () => void;
+  onOpenHome: (dateKey: string) => void;
 }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedDiary, setSelectedDiary] = useState<Diary | null>(null);
@@ -505,9 +514,15 @@ function ArchiveScreen({
             </>
           ) : (
             <div className="emptyState">
-              <p>오늘의 기록이 없습니다!</p>
-              <button className="primaryButton" onClick={onOpenHome}>
-                기록하러 가기
+              <p>{formatDateKey(dateKey)} 기록이 없습니다!</p>
+              <button
+                className="primaryButton"
+                onClick={() => {
+                  setSheetOpen(false);
+                  onOpenHome(dateKey);
+                }}
+              >
+                기록하기
               </button>
             </div>
           )}
