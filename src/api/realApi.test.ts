@@ -6,7 +6,6 @@ import {
   realApi,
   toBackendRetrospectiveBody,
 } from "./realApi";
-import type { DailyChatSession } from "../types";
 
 describe("toBackendRetrospectiveBody", () => {
   it("renames startDate/endDate to rangeStartDate/rangeEndDate", () => {
