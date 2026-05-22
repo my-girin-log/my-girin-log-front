@@ -14,6 +14,14 @@ export default defineConfig(({ mode }) => {
             "/api": {
               target: backendUrl,
               changeOrigin: true,
+              // 백엔드 CORS가 특정 origin만 허용하므로 (예: 5173만 허용),
+              // 브라우저가 보낸 Origin/Referer를 떼고 same-origin처럼 forward한다.
+              configure: (proxy) => {
+                proxy.on("proxyReq", (proxyReq) => {
+                  proxyReq.removeHeader("origin");
+                  proxyReq.removeHeader("referer");
+                });
+              },
             },
           },
         }

@@ -1,41 +1,84 @@
 :root {
-  /* surfaces */
-  --bg: #f7f6f2;
-  --bg-2: #f0eee7;
+  /* ── surfaces (warm cream) ── */
+  --bg: #faf8f2;
+  --bg-2: #f4f1e8;
   --surface: #ffffff;
-  --surface-2: #fbfaf7;
+  --surface-2: #fbfaf5;
+  --divider: #ece8dc;
+  --divider-2: #e2ddce;
 
-  /* ink scale */
-  --ink: #18181b;
-  --ink-2: #3f3f46;
-  --ink-3: #71717a;
-  --ink-4: #a1a1aa;
-  --ink-5: #d4d4d8;
+  /* ── ink scale (warm neutral) ── */
+  --ink: #1b1b1a;
+  --ink-2: #4a4a48;
+  --ink-3: #7e7c73;
+  --ink-4: #b5b2a6;
+  --ink-5: #d4d0c2;
 
-  /* hairlines */
-  --line: rgba(24, 24, 27, 0.07);
-  --line-2: rgba(24, 24, 27, 0.12);
-  --line-strong: rgba(24, 24, 27, 0.18);
+  /* hairlines (alpha-based on ink) */
+  --line: rgba(27, 27, 26, 0.06);
+  --line-2: rgba(27, 27, 26, 0.1);
+  --line-strong: rgba(27, 27, 26, 0.16);
 
-  /* accents */
-  --green: #2f9e6b;
-  --green-soft: #e8f4ed;
-  --green-ink: #1e6b47;
-  --lilac: #6e63c6;
-  --lilac-soft: #efecf9;
-  --amber: #b6772b;
-  --amber-soft: #f6ecdb;
+  /* ── brand · sage green ── */
+  --sage-700: #2f7a52;
+  --sage-600: #3f9468;
+  --sage-500: #4faa7c;
+  --sage-400: #7cc29a;
+  --sage-200: #c7e3d2;
+  --sage-100: #e4efe3;
+  --sage-50: #f1f6ee;
+
+  /* ── accent · giraffe warm tan ── */
+  --tan-700: #8c5a2e;
+  --tan-500: #c99560;
+  --tan-300: #e8b85c;
+  --tan-100: #f4e5c6;
+
+  /* ── heatmap 5 steps ── */
+  --heat-0: #ece8dc;
+  --heat-1: #dae5d0;
+  --heat-2: #a8cfb1;
+  --heat-3: #74b58c;
+  --heat-4: #3f9468;
+
+  /* semantic aliases (backwards-compat) */
+  --green: var(--sage-600);
+  --green-soft: var(--sage-100);
+  --green-ink: var(--sage-700);
+  --lilac: var(--tan-700);
+  --lilac-soft: var(--tan-100);
+  --amber: var(--tan-700);
+  --amber-soft: var(--tan-100);
   --rose: #b9426b;
   --rose-soft: #f8e6ec;
 
-  /* elevation */
-  --e1: 0 1px 0 rgba(24, 24, 27, 0.04), 0 1px 2px rgba(24, 24, 27, 0.04);
-  --e2: 0 1px 0 rgba(24, 24, 27, 0.05), 0 4px 12px rgba(24, 24, 27, 0.06);
-  --e3: 0 2px 0 rgba(24, 24, 27, 0.04), 0 16px 40px rgba(24, 24, 27, 0.12);
+  /* ── elevation · pixel-shadow (hard 2px, no blur) ── */
+  --pix-1: 2px 2px 0 0 rgba(27, 27, 26, 0.06);
+  --pix-2: 2px 2px 0 0 rgba(27, 27, 26, 0.1);
+  --pix-sage: 2px 2px 0 0 rgba(63, 148, 104, 0.22);
+  /* legacy elevation aliases now use pixel shadow */
+  --e1: var(--pix-1);
+  --e2: var(--pix-2);
+  --e3: 0 12px 32px rgba(27, 27, 26, 0.12);
 
-  --radius: 10px;
-  --radius-sm: 6px;
-  --radius-lg: 14px;
+  /* ── radius scale ── */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 20px;
+  --radius: var(--r-md);
+  --radius-sm: var(--r-sm);
+  --radius-lg: var(--r-lg);
+
+  /* ── spacing scale (mobile) ── */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-7: 32px;
+  --s-8: 40px;
 
   --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
@@ -46,8 +89,8 @@
   color: var(--ink);
   background: var(--bg);
   font-family:
-    "Pretendard", "Apple SD Gothic Neo", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+    "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR",
+    system-ui, sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -64,8 +107,11 @@ body {
   margin: 0;
   min-width: 320px;
   background-color: var(--bg);
-  background-image: radial-gradient(rgba(24, 24, 27, 0.04) 1px, transparent 1px);
-  background-size: 4px 4px;
+  background-image:
+    radial-gradient(rgba(27, 27, 26, 0.055) 1px, transparent 1.4px),
+    radial-gradient(rgba(63, 148, 104, 0.04) 1px, transparent 1.4px);
+  background-size: 12px 12px, 12px 12px;
+  background-position: 0 0, 6px 6px;
   overscroll-behavior-y: contain;
 }
 
@@ -100,10 +146,10 @@ textarea {
   margin: 0 auto;
   position: relative;
   background-color: var(--bg);
-  background-image: radial-gradient(rgba(24, 24, 27, 0.04) 1px, transparent 1px);
-  background-size: 4px 4px;
+  background-image: radial-gradient(rgba(27, 27, 26, 0.04) 1px, transparent 1px);
+  background-size: 8px 8px;
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.55;
 }
 
 .centerOnly {
@@ -122,10 +168,11 @@ textarea {
   align-items: center;
   justify-content: space-between;
   min-height: 52px;
-  padding: calc(8px + var(--safe-top)) 18px 8px;
-  background: rgba(247, 246, 242, 0.92);
-  backdrop-filter: blur(6px);
-  border-bottom: 1px solid var(--line);
+  padding: calc(10px + var(--safe-top)) var(--s-5) 10px;
+  background: rgba(250, 248, 242, 0.94);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--divider);
 }
 
 .appHeader h1 {
@@ -164,20 +211,24 @@ textarea {
 
 .iconButton {
   display: inline-grid;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   place-items: center;
   border-radius: 999px;
   background: var(--surface);
   color: var(--ink-2);
-  box-shadow: inset 0 0 0 1px var(--line-2);
+  box-shadow: inset 0 0 0 1px var(--divider-2);
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
 .iconButton:hover {
   background: var(--surface-2);
+}
+
+.iconButton:active {
+  transform: translate(1px, 1px);
 }
 
 .iconButton span {
@@ -199,12 +250,12 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 42px;
-  padding: 10px 16px;
-  border-radius: var(--radius-sm);
+  min-height: 48px;
+  padding: 12px 18px;
+  border-radius: var(--r-md);
   font-weight: 600;
-  font-size: 14px;
-  letter-spacing: -0.01em;
+  font-size: 15px;
+  letter-spacing: -0.005em;
   transition: background 0.12s ease, box-shadow 0.12s ease, transform 0.05s ease;
 }
 
@@ -212,11 +263,12 @@ textarea {
   width: 100%;
   background: var(--ink);
   color: #fff;
-  box-shadow: var(--e1);
+  box-shadow: var(--pix-2);
 }
 
 .primaryButton.accent {
-  background: var(--green);
+  background: var(--sage-600);
+  box-shadow: var(--pix-sage);
 }
 
 .primaryButton.dark {
@@ -230,21 +282,28 @@ textarea {
 .primaryButton:disabled {
   opacity: 0.55;
   cursor: progress;
+  box-shadow: none;
 }
 
 .primaryButton:active {
-  transform: translateY(1px);
+  transform: translate(1px, 1px);
+  box-shadow: none;
 }
 
 .secondaryButton {
   background: var(--surface);
   color: var(--ink-2);
-  box-shadow: inset 0 0 0 1px var(--line-2);
+  box-shadow: inset 0 0 0 1px var(--divider-2), var(--pix-1);
 }
 
 .secondaryButton:hover {
   background: var(--surface-2);
-  box-shadow: inset 0 0 0 1px var(--line-strong);
+  box-shadow: inset 0 0 0 1px var(--line-strong), var(--pix-1);
+}
+
+.secondaryButton:active {
+  transform: translate(1px, 1px);
+  box-shadow: inset 0 0 0 1px var(--divider-2);
 }
 
 .dangerButton {
@@ -302,9 +361,10 @@ textarea {
   height: 56px;
   object-fit: contain;
   image-rendering: pixelated;
-  background: linear-gradient(135deg, #f1ecdf 0%, #eae3f5 100%);
-  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--tan-100) 0%, var(--sage-100) 100%);
+  border-radius: var(--r-md);
   padding: 4px;
+  box-shadow: var(--pix-1);
 }
 
 .interactionBand p {
@@ -351,12 +411,13 @@ textarea {
 }
 
 .messageBubble {
-  padding: 10px 14px;
+  padding: 11px 14px;
   border-radius: 16px;
-  font-size: 14.5px;
+  font-size: 15px;
   line-height: 1.55;
   word-break: break-word;
   white-space: pre-wrap;
+  box-shadow: var(--pix-1);
 }
 
 .messageRow.user .messageBubble {
@@ -368,7 +429,7 @@ textarea {
 .messageRow.assistant .messageBubble {
   background: var(--surface);
   color: var(--ink);
-  box-shadow: inset 0 0 0 1px var(--line);
+  box-shadow: inset 0 0 0 1px var(--divider), var(--pix-1);
   border-bottom-left-radius: 6px;
 }
 
@@ -390,20 +451,25 @@ textarea {
   align-items: center;
   gap: 6px;
   margin: 16px 0 4px;
-  padding: 8px 12px;
+  padding: 8px 13px;
   border-radius: 999px;
-  background: var(--green-soft);
-  color: var(--green-ink);
+  background: var(--sage-50);
+  color: var(--sage-700);
   font-family: var(--mono);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.02em;
-  box-shadow: inset 0 0 0 1px rgba(46, 158, 107, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(63, 148, 104, 0.22), var(--pix-1);
   transition: background 0.12s ease;
 }
 
 .endSessionButton:hover {
-  background: #def0e4;
+  background: var(--sage-100);
+}
+
+.endSessionButton:active {
+  transform: translate(1px, 1px);
+  box-shadow: inset 0 0 0 1px rgba(63, 148, 104, 0.22);
 }
 
 .endSessionButton:disabled {
@@ -415,13 +481,13 @@ textarea {
   position: sticky;
   bottom: calc(var(--nav-height) + var(--safe-bottom) + 10px);
   display: grid;
-  grid-template-columns: 34px 1fr 34px;
+  grid-template-columns: 36px 1fr 36px;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: 12px;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
   background: var(--surface);
-  box-shadow: var(--e2);
+  box-shadow: inset 0 0 0 1px var(--divider), var(--pix-1);
 }
 
 .composer .iconButton {
@@ -447,18 +513,24 @@ textarea {
 
 .sendButton {
   display: grid;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   place-items: center;
   border-radius: 999px;
-  background: var(--ink);
+  background: var(--sage-600);
   color: #fff;
-  box-shadow: var(--e1);
+  box-shadow: var(--pix-sage);
+}
+
+.sendButton:active {
+  transform: translate(1px, 1px);
+  box-shadow: none;
 }
 
 .sendButton:disabled {
-  opacity: 0.4;
+  opacity: 0.45;
   cursor: progress;
+  box-shadow: none;
 }
 
 /* ============================================================
@@ -499,12 +571,16 @@ textarea {
   position: relative;
   display: grid;
   place-items: center;
-  width: 180px;
-  height: 180px;
-  margin: 0 auto 18px;
-  border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, #f1ecdf 0%, #eae3f5 100%);
+  width: 220px;
+  height: 220px;
+  margin: 4px auto 18px;
+  border-radius: var(--r-lg);
+  background:
+    radial-gradient(closest-side at 50% 55%, rgba(232, 184, 92, 0.28), rgba(232, 184, 92, 0) 70%),
+    linear-gradient(135deg, var(--tan-100) 0%, var(--sage-100) 100%);
+  box-shadow: var(--pix-2);
   overflow: hidden;
+  isolation: isolate;
 }
 
 .petStage::after {
@@ -515,8 +591,8 @@ textarea {
     180deg,
     transparent 0px,
     transparent 3px,
-    rgba(24, 24, 27, 0.03) 3px,
-    rgba(24, 24, 27, 0.03) 4px
+    rgba(27, 27, 26, 0.03) 3px,
+    rgba(27, 27, 26, 0.03) 4px
   );
   pointer-events: none;
 }
@@ -550,38 +626,47 @@ textarea {
   letter-spacing: -0.02em;
 }
 
-.petScreen h2::before {
-  content: "PET ";
-  color: var(--green);
+.petLabel {
+  margin: 4px 0 2px;
+  color: var(--sage-600);
   font-family: var(--mono);
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.1em;
-  margin-right: 4px;
-  vertical-align: 2px;
+  text-transform: uppercase;
 }
 
 .petBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 24px;
-  padding: 5px 12px;
-  border-radius: 999px;
-  background: var(--ink);
-  color: #fff;
+  display: inline-block;
+  margin: 4px 0 22px;
+  padding: 0;
+  background: transparent;
+  color: var(--ink-2);
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
+}
+
+.meterBlock {
+  width: 100%;
+  margin: 4px 0 28px;
+  text-align: left;
 }
 
 .meterCard {
   padding: 16px 18px;
   border-radius: var(--radius);
   background: var(--surface);
-  box-shadow: var(--e1);
+  box-shadow: inset 0 0 0 1px var(--divider), var(--pix-1);
   text-align: left;
+}
+
+.meterCaption {
+  margin: 12px 0 0;
+  color: var(--ink-3);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .meterHeader {
@@ -618,11 +703,11 @@ textarea {
 
 /* Activity grass — STYLED.md §6 heatmap */
 .grassCard {
-  margin: 22px 0 18px;
-  padding: 16px 18px 14px;
-  border-radius: var(--radius);
+  margin: 4px 0 18px;
+  padding: 18px 20px 16px;
+  border-radius: var(--r-lg);
   background: var(--surface);
-  box-shadow: var(--e1);
+  box-shadow: inset 0 0 0 1px var(--divider), var(--pix-1);
   text-align: left;
 }
 
@@ -713,26 +798,15 @@ textarea {
   width: 12px;
   height: 12px;
   border-radius: 2px;
-  background: var(--bg-2);
-  box-shadow: inset 0 0 0 1px rgba(24, 24, 27, 0.04);
+  background: var(--heat-0);
+  box-shadow: inset 0 0 0 1px rgba(27, 27, 26, 0.04);
   transition: transform 0.08s ease;
 }
 
-.grassCell.level1 {
-  background: #d5ebdf;
-}
-
-.grassCell.level2 {
-  background: #9fd5b9;
-}
-
-.grassCell.level3 {
-  background: var(--green);
-}
-
-.grassCell.level4 {
-  background: var(--green-ink);
-}
+.grassCell.level1 { background: var(--heat-1); }
+.grassCell.level2 { background: var(--heat-2); }
+.grassCell.level3 { background: var(--heat-3); }
+.grassCell.level4 { background: var(--heat-4); }
 
 .grassLegend {
   display: flex;
@@ -859,15 +933,19 @@ textarea {
   width: 100%;
   gap: 6px;
   padding: 18px 4px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--divider);
   background: transparent;
   text-align: left;
-  transition: padding 0.12s ease, background 0.12s ease;
+  transition: padding 0.12s ease, background 0.12s ease, transform 0.05s ease;
 }
 
 .listCard:hover {
   padding-inline: 12px;
   background: var(--surface-2);
+}
+
+.listCard:active {
+  transform: translate(1px, 1px);
 }
 
 .listCard strong {
@@ -990,40 +1068,59 @@ textarea {
   background: var(--bg-2);
 }
 
-/* Diary entry — filled soft green background */
+/* Diary entry — heatmap step 3 (mid-strong sage) */
 .react-calendar__tile.tileWithEntry {
-  background: var(--green-soft);
-  color: var(--green-ink);
+  background: var(--heat-3);
+  color: #fff;
   font-weight: 600;
 }
 
 .react-calendar__tile.tileWithEntry:enabled:hover,
 .react-calendar__tile.tileWithEntry:enabled:focus {
-  background: #def0e4;
+  background: var(--heat-4);
 }
 
-/* Today — green outline only (no background change) */
+/* Today — sage outline + sage text + subtle pulse */
 .react-calendar__tile--now {
-  color: var(--green-ink);
-  box-shadow: inset 0 0 0 1.5px var(--green);
+  color: var(--sage-700);
+  box-shadow: inset 0 0 0 1.5px var(--sage-600);
+  animation: pix-pulse 2.4s ease-in-out infinite;
 }
 
-/* Selected — green solid background, white text. Overrides entry/now visuals */
+@keyframes pix-pulse {
+  0%, 100% { box-shadow: inset 0 0 0 1.5px var(--sage-600), 0 0 0 0 rgba(63, 148, 104, 0.5); }
+  50% { box-shadow: inset 0 0 0 1.5px var(--sage-600), 0 0 0 3px rgba(63, 148, 104, 0); }
+}
+
+/* Selected — ink solid, white text, with pixel-corner glyph */
 .react-calendar__tile--active,
 .react-calendar__tile--active:enabled:hover,
 .react-calendar__tile--active:enabled:focus {
-  background: var(--green);
+  background: var(--ink);
   color: #fff;
   box-shadow: none;
   font-weight: 600;
+  animation: none;
 }
 
-/* Future dates — disabled, dimmed, no interactions */
+.react-calendar__tile--active::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 4px;
+  height: 4px;
+  background: var(--sage-400);
+  pointer-events: none;
+}
+
+/* Future dates — dim, no interactions */
 .react-calendar__tile:disabled {
-  color: var(--ink-5);
+  color: var(--ink-4);
   background: transparent;
   cursor: not-allowed;
   font-weight: 500;
+  animation: none;
 }
 
 .react-calendar__tile:disabled:hover,
@@ -1051,12 +1148,14 @@ textarea {
   height: calc(var(--nav-height) + var(--safe-bottom));
   margin: 0 auto;
   padding-bottom: var(--safe-bottom);
-  background: rgba(247, 246, 242, 0.92);
-  backdrop-filter: blur(8px);
-  border-top: 1px solid var(--line);
+  background: rgba(250, 248, 242, 0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid var(--divider);
 }
 
 .bottomNav button {
+  position: relative;
   display: grid;
   place-items: center;
   gap: 4px;
@@ -1079,7 +1178,18 @@ textarea {
 }
 
 .bottomNav button.active .icon {
-  color: var(--green);
+  color: var(--sage-600);
+}
+
+/* pixel indicator above active tab */
+.bottomNav button.active::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  width: 18px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--sage-600);
 }
 
 /* ============================================================
@@ -1108,10 +1218,10 @@ textarea {
   margin: 0 auto;
   padding: 14px 22px calc(28px + var(--safe-bottom));
   overflow: auto;
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
   background: var(--surface);
-  box-shadow: var(--e3);
-  font-size: 14px;
+  box-shadow: 0 -8px 32px rgba(27, 27, 26, 0.12);
+  font-size: 15px;
   overscroll-behavior: contain;
 }
 
@@ -1229,25 +1339,43 @@ textarea {
 }
 
 .choiceGroup button {
-  padding: 7px 14px;
+  position: relative;
+  padding: 8px 14px;
   border-radius: 999px;
   background: var(--surface);
   color: var(--ink-2);
   font-family: var(--mono);
   font-size: 12px;
   font-weight: 500;
-  box-shadow: inset 0 0 0 1px var(--line-2);
-  transition: background 0.12s ease, box-shadow 0.12s ease, color 0.12s ease;
+  box-shadow: inset 0 0 0 1px var(--divider-2);
+  transition: background 0.12s ease, box-shadow 0.12s ease, color 0.12s ease, transform 0.05s ease;
 }
 
 .choiceGroup button:hover {
   background: var(--surface-2);
 }
 
+.choiceGroup button:active {
+  transform: translate(1px, 1px);
+}
+
 .choiceGroup button.selected {
-  background: var(--green-soft);
-  color: var(--green-ink);
-  box-shadow: inset 0 0 0 1px rgba(46, 158, 107, 0.32);
+  background: var(--sage-50);
+  color: var(--sage-700);
+  box-shadow: inset 0 0 0 1.5px var(--sage-600);
+  padding-left: 22px;
+}
+
+/* Pixel corner glyph on selected pill */
+.choiceGroup button.selected::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  width: 4px;
+  height: 4px;
+  margin-top: -2px;
+  background: var(--sage-600);
 }
 
 .dateRangeRow {
@@ -1286,11 +1414,16 @@ textarea {
 }
 
 .rangePreview {
-  margin: 8px 0 0;
-  color: var(--green-ink);
+  display: inline-block;
+  margin: 10px 0 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--sage-50);
+  color: var(--sage-700);
   font-family: var(--mono);
   font-size: 11px;
   font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 .formError {

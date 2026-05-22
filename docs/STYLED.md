@@ -242,3 +242,37 @@ Don't:
 4. 실록이 또는 기린 sprite가 나오는 영역만 픽셀 질감과 scanline을 강하게 허용한다.
 5. UI 라벨, 날짜, 레벨, 상태값은 `JetBrains Mono`를 사용한다.
 6. 모바일에서도 색상, radius, hairline, dot marker 규칙은 그대로 유지한다.
+
+## 10. Screen-Specific Patterns
+
+### 10.1 Header
+- 좌측 `기 · 록` 모노스페이스 11px(green) + 본문 `내가그린기린기록` 16px bold.
+- 우측 원형 32px 아바타, 흰 surface + hairline inset, 닉네임 첫 글자 monospace.
+
+### 10.2 Home / Session
+- 상단 `5월 22일 · 기록 중`을 monospace uppercase 11px + 좌측 4px square `--green` dot.
+- 첫 안내 카드(어시스턴트)는 좌측에 픽셀 아바타 32px + 가벼운 surface 카드, 본문 `질문 대답해줘!` 17px bold, 메타 `2026.05.22 · session #014` monospace 10.5px uppercase.
+- 사용자 말풍선은 우측 정렬 ink solid + 흰 글씨, 어시스턴트는 좌측 정렬 surface + hairline.
+- 컴포저는 흰 surface, radius 999px(pill) 혹은 12px, 입력 placeholder `5월 22일의 생각을 적어보세요`, 우측 32px 검정 원형 send.
+
+### 10.3 Pet / Growth
+- 상단 둥근 말풍선 `오늘도 함께 성장해볼까요?` (자그마한 tail).
+- 큰 정사각형 portrait 카드(280×280 권장) — `linear-gradient(135deg, #F1ECDF 0%, #EAE3F5 100%)` + scanline. 캐릭터는 78% bob 3.6s.
+- 이름 라벨은 `PET` monospace 11px + `실록이` 22px bold.
+- 레벨 뱃지 한 줄: `LV.1 — 새싹 기린 · STATUS: GOOD` (monospace 12px, ink-2). 단계명은 calf=새싹 기린, adolescent=청년 기린, adult=어른 기린.
+- EXP 미터는 hairline 카드 없이 그대로 노출 가능: `EXP` label + `68 / 100`, 진행 바 6px 높이, 아래 작은 안내 `회고 3번 더 작성하면 다음 레벨로 진화해요`.
+- `기록의 흐름` 헤더 + `41 ENTRIES` chip + `지난 4개월` 보조. GitHub-style 잔디는 월 라벨 `2월 3월 4월 5월`을 상단에 두고 가로 columns로 흐른다.
+
+### 10.4 Archive / Calendar
+- `아카이브 / 5월의 기록들` 헤더, 좌측 작은 픽셀 portrait + 우측 큰 제목 18px.
+- 달력 셀은 GitHub 잔디 강도 5단계: `bg-2 → #D5EBDF → #9FD5B9 → green → green-ink`. 오늘은 ink solid + 흰 글씨, 미래는 dim.
+- 셀 하단에 별도 dot 표시 금지(셀 자체 배경이 indicator). 오늘만 inline 4px dot 허용.
+- 메인 액션 `회고 생성하기`는 ink solid 풀폭, icon-left.
+- `5월의 회고 · 2 ENTRIES`처럼 섹션 제목 옆 monospace chip로 카운트.
+
+### 10.5 회고 생성 BottomSheet
+- `새 회고` 작은 monospace 라벨 + `회고 생성하기` 18px 헤더 + 안내문.
+- 각 필드 라벨은 `기간` + 우측에 `REQUIRED` 작은 chip (monospace 9px green-ink).
+- 선택된 pill에는 ✓ 접두, surface bg → `--green-soft` 전환.
+- 기간 미리보기는 `RANGE 2026-05-20 → 2026-05-22` (monospace, green-ink, soft 배경 chip).
+- 하단 sticky `생성하기` 버튼은 ink solid + 우측에 `· 3 DAYS · 우테코` 같은 summary 보조 텍스트 monospace.
