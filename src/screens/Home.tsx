@@ -88,9 +88,10 @@ export function HomeScreen({
       </div>
       <div className="chatLog">
         {session.messages.map((item) => (
-          <article key={item.id} className={`messageBubble ${item.role}`}>
-            <span className="speakerLabel">{item.role === "user" ? "[USER]" : "[SILOK]"}</span>
-            <p>{item.content}</p>
+          <article key={item.id} className={`messageRow ${item.role}`}>
+            <div className="messageBubble">
+              <p>{item.content}</p>
+            </div>
             <time>{format(new Date(item.createdAt), "a h:mm")}</time>
           </article>
         ))}
