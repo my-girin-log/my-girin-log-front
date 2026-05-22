@@ -44,6 +44,7 @@ export function ArchiveScreen({
   const [retroOpen, setRetroOpen] = useState(false);
   const [selectedRetro, setSelectedRetro] = useState<Retrospective | null>(null);
   const dateKey = toDateKey(selectedDate);
+  const todayDateKey = useMemo(() => toDateKey(new Date()), []);
   const diaryKeys = useMemo(() => new Set(diaries.map((diary) => diary.dateKey)), [diaries]);
   const monthRetros = useMemo(
     () =>
@@ -125,6 +126,10 @@ export function ArchiveScreen({
           tileClassName={({ date, view }) => {
             if (view !== "month") return null;
             return diaryKeys.has(toDateKey(date)) ? "tileWithEntry" : null;
+          }}
+          tileDisabled={({ date, view }) => {
+            if (view !== "month") return false;
+            return toDateKey(date) > todayDateKey;
           }}
         />
       </div>

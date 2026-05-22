@@ -616,34 +616,30 @@ textarea {
   transition: width 0.4s ease;
 }
 
-.statGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
+/* Activity grass — STYLED.md §6 heatmap */
+.grassCard {
   margin: 22px 0 18px;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  padding: 16px 18px 14px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--e1);
   text-align: left;
 }
 
-.statGrid > div {
+.grassHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.grassHeader > div {
   display: grid;
-  gap: 4px;
-  padding: 16px 14px;
+  gap: 2px;
 }
 
-.statGrid > div + div {
-  border-left: 1px solid var(--line);
-}
-
-.statGrid .icon {
-  width: 14px;
-  height: 14px;
-  color: var(--green);
-  margin-bottom: 2px;
-}
-
-.statGrid span {
+.grassHeader span {
   color: var(--ink-4);
   font-family: var(--mono);
   font-size: 10px;
@@ -652,11 +648,109 @@ textarea {
   text-transform: uppercase;
 }
 
-.statGrid strong {
-  font-family: var(--mono);
-  font-size: 26px;
-  font-weight: 500;
+.grassHeader strong {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--ink);
+}
+
+.grassStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin: 4px 0 0;
+  color: var(--ink-4);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.grassStats b {
+  color: var(--ink-2);
+  font-weight: 600;
+}
+
+.grassStats i {
+  width: 3px;
+  height: 3px;
+  background: var(--ink-5);
+}
+
+.grassHeader em {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: var(--green-ink);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.grassGrid {
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+  overflow-x: auto;
+  padding: 2px 1px 6px;
+}
+
+.grassWeek {
+  display: grid;
+  grid-template-rows: repeat(7, 1fr);
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.grassCell {
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  background: var(--bg-2);
+  box-shadow: inset 0 0 0 1px rgba(24, 24, 27, 0.04);
+  transition: transform 0.08s ease;
+}
+
+.grassCell.level1 {
+  background: #d5ebdf;
+}
+
+.grassCell.level2 {
+  background: #9fd5b9;
+}
+
+.grassCell.level3 {
+  background: var(--green);
+}
+
+.grassCell.level4 {
+  background: var(--green-ink);
+}
+
+.grassLegend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 12px;
+  color: var(--ink-4);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.grassLegend i {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
 }
 
 .tipCard {
@@ -896,46 +990,45 @@ textarea {
   background: var(--bg-2);
 }
 
+/* Diary entry — filled soft green background */
+.react-calendar__tile.tileWithEntry {
+  background: var(--green-soft);
+  color: var(--green-ink);
+  font-weight: 600;
+}
+
+.react-calendar__tile.tileWithEntry:enabled:hover,
+.react-calendar__tile.tileWithEntry:enabled:focus {
+  background: #def0e4;
+}
+
+/* Today — green outline only (no background change) */
 .react-calendar__tile--now {
-  color: var(--green);
+  color: var(--green-ink);
+  box-shadow: inset 0 0 0 1.5px var(--green);
 }
 
-.react-calendar__tile--now::after {
-  content: "";
-  position: absolute;
-  left: 8px;
-  bottom: 8px;
-  width: 4px;
-  height: 4px;
-  background: var(--green);
-  border-radius: 1px;
-}
-
+/* Selected — green solid background, white text. Overrides entry/now visuals */
 .react-calendar__tile--active,
 .react-calendar__tile--active:enabled:hover,
 .react-calendar__tile--active:enabled:focus {
-  background: var(--ink);
-  color: #fff;
-}
-
-.react-calendar__tile.tileWithEntry {
-  color: var(--ink);
-}
-
-.react-calendar__tile.tileWithEntry::before {
-  content: "";
-  position: absolute;
-  left: 8px;
-  bottom: 8px;
-  width: 4px;
-  height: 4px;
   background: var(--green);
-  border-radius: 1px;
+  color: #fff;
+  box-shadow: none;
+  font-weight: 600;
 }
 
-.react-calendar__tile.tileWithEntry.react-calendar__tile--active::before,
-.react-calendar__tile--now.react-calendar__tile--active::after {
-  background: #fff;
+/* Future dates — disabled, dimmed, no interactions */
+.react-calendar__tile:disabled {
+  color: var(--ink-5);
+  background: transparent;
+  cursor: not-allowed;
+  font-weight: 500;
+}
+
+.react-calendar__tile:disabled:hover,
+.react-calendar__tile:disabled:focus {
+  background: transparent;
 }
 
 .react-calendar__month-view__days__day--neighboringMonth {
